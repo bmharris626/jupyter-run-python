@@ -9,7 +9,8 @@ describe('readRunnerSettings', () => {
       openNewTerminalPerRun: false,
       defaultEnv: { APP_ENV: 'dev' },
       defaultCwdMode: 'server_root',
-      showRunButtonInEditor: false
+      showRunButtonInEditor: false,
+      recentArgsPresets: { 'a.py': ['--foo 1', '--bar 2'] }
     });
 
     expect(settings.defaultPythonCommand).toBe('python3.12');
@@ -18,6 +19,7 @@ describe('readRunnerSettings', () => {
     expect(settings.defaultEnv.APP_ENV).toBe('dev');
     expect(settings.defaultCwdMode).toBe('server_root');
     expect(settings.showRunButtonInEditor).toBe(false);
+    expect(settings.recentArgsPresets['a.py']).toEqual(['--foo 1', '--bar 2']);
   });
 
   it('falls back for invalid inputs', () => {
@@ -25,7 +27,8 @@ describe('readRunnerSettings', () => {
       defaultPythonCommand: '   ',
       kernelCommandMap: { python3: 7 },
       defaultEnv: { A: 1 },
-      defaultCwdMode: 'bad'
+      defaultCwdMode: 'bad',
+      recentArgsPresets: { 'b.py': [1, '   ', '--ok'], 'x.py': 'nope' }
     });
 
     expect(settings.defaultPythonCommand).toBe('python3');
@@ -34,6 +37,7 @@ describe('readRunnerSettings', () => {
     expect(settings.defaultCwdMode).toBe('script_dir');
     expect(settings.openNewTerminalPerRun).toBe(true);
     expect(settings.showRunButtonInEditor).toBe(true);
+    expect(settings.recentArgsPresets['b.py']).toEqual(['--ok']);
   });
 });
 

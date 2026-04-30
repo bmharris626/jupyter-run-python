@@ -151,11 +151,11 @@ Automated checks:
 
 ## 12) Post-MVP enhancements (optional)
 
-- [ ] Add stop/re-run actions for latest terminal execution.
-- [ ] Save recent args presets per file.
+- [x] Add stop/re-run actions for latest terminal execution.
+- [x] Save recent args presets per file.
 - [ ] Add project-level profiles (`python`, `uv run`, `poetry run python`).
 - [ ] Add traceback link parsing back to source file.
-- [ ] Add optional "reuse one terminal" mode.
+- [x] Add optional "reuse one terminal" mode.
 
 ---
 

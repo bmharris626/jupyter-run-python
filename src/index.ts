@@ -88,6 +88,37 @@ const plugin: JupyterFrontEndPlugin<void> = {
         .join('\n');
     };
 
+    let latestRunCommand: string | null = null;
+    let latestRunTerminalId: string | null = null;
+    let preferredReusableTerminalId: string | null = null;
+
+    const updateRecentArgsPresets = async (scriptPath: string, argsText: string): Promise<void> => {
+      if (!loadedSettings || argsText.trim().length === 0) {
+        return;
+      }
+
+      const current = { ...runnerSettings.recentArgsPresets };
+      const existing = current[scriptPath] ?? [];
+      const next = [argsText.trim(), ...existing.filter(item => item !== argsText.trim())].slice(0, 5);
+      current[scriptPath] = next;
+      await loadedSettings.set('recentArgsPresets', current);
+    };
+
+    const getTrackedTerminalWidget = () => {
+      if (!terminalTracker) {
+        return null;
+      }
+
+      let matched: ITerminalTracker['currentWidget'] = null;
+      terminalTracker.forEach(widget => {
+        if (widget.id === preferredReusableTerminalId) {
+          matched = widget;
+        }
+      });
+
+      return matched;
+    };
+
     const runInTerminal = async (command: string): Promise<boolean> => {
       if (!terminalTracker || !app.serviceManager.terminals.isAvailable()) {
         await showDialog({
@@ -99,12 +130,15 @@ const plugin: JupyterFrontEndPlugin<void> = {
       }
 
       try {
-        const shouldCreateNew = runnerSettings.openNewTerminalPerRun || !terminalTracker.currentWidget;
+        const reusableTerminal = getTrackedTerminalWidget();
+        const shouldCreateNew =
+          runnerSettings.openNewTerminalPerRun || (!reusableTerminal && !terminalTracker.currentWidget);
         if (shouldCreateNew) {
           await app.commands.execute('terminal:create-new');
+          preferredReusableTerminalId = terminalTracker.currentWidget?.id ?? null;
         }
 
-        const terminalWidget = terminalTracker.currentWidget;
+        const terminalWidget = reusableTerminal ?? terminalTracker.currentWidget;
         if (!terminalWidget) {
           await showDialog({
             title: 'Terminal launch failed',
@@ -119,6 +153,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
           type: 'stdin',
           content: [buildTransparentExecutionCommand(command) + '\n']
         });
+        latestRunCommand = command;
+        latestRunTerminalId = terminalWidget.id;
+        if (!runnerSettings.openNewTerminalPerRun) {
+          preferredReusableTerminalId = terminalWidget.id;
+        }
         return true;
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown terminal error.';
@@ -216,7 +255,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
           kernels: kernelOptions,
           selectedKernel,
           defaultCommand: defaultPythonCommand,
-          defaultEnvText: envMapToText(defaultEnv)
+          defaultEnvText: envMapToText(defaultEnv),
+          recentArgsPresets: runnerSettings.recentArgsPresets[target.path] ?? []
         });
 
         const result = await showDialog({
@@ -280,7 +320,50 @@ const plugin: JupyterFrontEndPlugin<void> = {
           return;
         }
         const fallbackCwd = resolveDefaultCwd(runnerSettings.defaultCwdMode, target.path);
-        await runInTerminal(wrapCommandWithCwd(runCommand, resolved.cwd ?? fallbackCwd));
+        const finalCommand = wrapCommandWithCwd(runCommand, resolved.cwd ?? fallbackCwd);
+        const didRun = await runInTerminal(finalCommand);
+        if (didRun && resolved.saveArgsPreset && result.value.argsText.trim().length > 0) {
+          await updateRecentArgsPresets(target.path, result.value.argsText);
+        }
+      }
+    });
+
+    app.commands.addCommand('python-runner:rerun-latest', {
+      label: 'Re-run Last Python Command',
+      isEnabled: () => latestRunCommand !== null,
+      execute: async () => {
+        if (!latestRunCommand) {
+          return;
+        }
+
+        await runInTerminal(latestRunCommand);
+      }
+    });
+
+    app.commands.addCommand('python-runner:stop-latest', {
+      label: 'Stop Last Python Run',
+      isEnabled: () => latestRunTerminalId !== null,
+      execute: async () => {
+        if (!terminalTracker || !latestRunTerminalId) {
+          return;
+        }
+
+        await app.shell.activateById(latestRunTerminalId);
+        const latestTerminal = terminalTracker.currentWidget;
+
+        if (!latestTerminal || latestTerminal.id !== latestRunTerminalId) {
+          await showDialog({
+            title: 'Latest terminal missing',
+            body: 'No active terminal was found for the latest run.',
+            buttons: [Dialog.okButton({ label: 'OK' })]
+          });
+          return;
+        }
+
+        latestTerminal.content.session.send({
+          type: 'stdin',
+          content: ['\u0003']
+        });
       }
     });
 
@@ -301,6 +384,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
         command: 'python-runner:run-advanced',
         category: 'Python Runner'
       });
+      palette.addItem({ command: 'python-runner:rerun-latest', category: 'Python Runner' });
+      palette.addItem({ command: 'python-runner:stop-latest', category: 'Python Runner' });
       palette.addItem({ command: 'python-runner:about', category: 'Python Runner' });
     }
 

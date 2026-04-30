@@ -5,8 +5,10 @@ export class AdvancedRunForm extends Widget {
   private readonly kernelSelect: HTMLSelectElement;
   private readonly commandInput: HTMLInputElement;
   private readonly argsInput: HTMLInputElement;
+  private readonly argsPresetSelect: HTMLSelectElement;
   private readonly envInput: HTMLTextAreaElement;
   private readonly cwdInput: HTMLInputElement;
+  private readonly savePresetCheckbox: HTMLInputElement;
 
   constructor(options: {
     targetPath: string;
@@ -14,6 +16,7 @@ export class AdvancedRunForm extends Widget {
     selectedKernel: string;
     defaultCommand: string;
     defaultEnvText: string;
+    recentArgsPresets: string[];
   }) {
     super({ node: document.createElement('div') });
     this.addClass('jp-pythonRunner-advancedForm');
@@ -51,11 +54,42 @@ export class AdvancedRunForm extends Widget {
     this.node.appendChild(this.commandInput);
 
     this.node.appendChild(createLabel('Arguments'));
+    this.argsPresetSelect = document.createElement('select');
+    this.argsPresetSelect.style.width = '100%';
+    const customOption = document.createElement('option');
+    customOption.value = '';
+    customOption.text = 'Custom args';
+    this.argsPresetSelect.appendChild(customOption);
+    for (const preset of options.recentArgsPresets) {
+      const option = document.createElement('option');
+      option.value = preset;
+      option.text = preset;
+      this.argsPresetSelect.appendChild(option);
+    }
+    this.node.appendChild(this.argsPresetSelect);
+
     this.argsInput = document.createElement('input');
     this.argsInput.type = 'text';
     this.argsInput.placeholder = '--flag value';
     this.argsInput.style.width = '100%';
+    this.argsInput.style.marginTop = '6px';
     this.node.appendChild(this.argsInput);
+
+    this.argsPresetSelect.onchange = () => {
+      if (this.argsPresetSelect.value.length > 0) {
+        this.argsInput.value = this.argsPresetSelect.value;
+      }
+    };
+
+    const savePresetLabel = document.createElement('label');
+    savePresetLabel.style.display = 'block';
+    savePresetLabel.style.marginTop = '6px';
+    this.savePresetCheckbox = document.createElement('input');
+    this.savePresetCheckbox.type = 'checkbox';
+    this.savePresetCheckbox.style.marginRight = '6px';
+    savePresetLabel.appendChild(this.savePresetCheckbox);
+    savePresetLabel.appendChild(document.createTextNode('Save args as recent preset for this file'));
+    this.node.appendChild(savePresetLabel);
 
     this.node.appendChild(createLabel('Environment (KEY=value per line)'));
     this.envInput = document.createElement('textarea');
@@ -78,7 +112,8 @@ export class AdvancedRunForm extends Widget {
       commandOverride: this.commandInput.value,
       argsText: this.argsInput.value,
       envText: this.envInput.value,
-      cwd: this.cwdInput.value
+      cwd: this.cwdInput.value,
+      saveArgsPreset: this.savePresetCheckbox.checked
     };
   }
 }

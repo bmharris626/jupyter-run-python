@@ -55,6 +55,8 @@ jupyter lab build
 - Command IDs:
   - `python-runner:run`
   - `python-runner:run-advanced`
+  - `python-runner:rerun-latest`
+  - `python-runner:stop-latest`
 - Settings schema: `schema/plugin.json`
   - `defaultPythonCommand`
   - `kernelCommandMap`
@@ -62,6 +64,7 @@ jupyter lab build
   - `defaultEnv`
   - `defaultCwdMode`
   - `showRunButtonInEditor`
+  - `recentArgsPresets`
 
 ## Status
 

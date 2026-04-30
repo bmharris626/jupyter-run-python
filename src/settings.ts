@@ -7,6 +7,7 @@ export interface RunnerSettings {
   defaultEnv: Record<string, string>;
   defaultCwdMode: DefaultCwdMode;
   showRunButtonInEditor: boolean;
+  recentArgsPresets: Record<string, string[]>;
 }
 
 const DEFAULT_SETTINGS: RunnerSettings = {
@@ -15,7 +16,32 @@ const DEFAULT_SETTINGS: RunnerSettings = {
   openNewTerminalPerRun: true,
   defaultEnv: {},
   defaultCwdMode: 'script_dir',
-  showRunButtonInEditor: true
+  showRunButtonInEditor: true,
+  recentArgsPresets: {}
+};
+
+const asStringArrayMap = (value: unknown): Record<string, string[]> => {
+  if (typeof value !== 'object' || value === null) {
+    return {};
+  }
+
+  const result: Record<string, string[]> = {};
+  for (const [key, entry] of Object.entries(value)) {
+    if (!Array.isArray(entry)) {
+      continue;
+    }
+
+    const items = entry
+      .filter((item): item is string => typeof item === 'string')
+      .map(item => item.trim())
+      .filter(item => item.length > 0)
+      .slice(0, 5);
+    if (items.length > 0) {
+      result[key] = items;
+    }
+  }
+
+  return result;
 };
 
 const asStringMap = (value: unknown): Record<string, string> => {
@@ -67,7 +93,8 @@ export const readRunnerSettings = (composite: Record<string, unknown> | null | u
     openNewTerminalPerRun,
     defaultEnv: asStringMap(composite?.defaultEnv),
     defaultCwdMode,
-    showRunButtonInEditor
+    showRunButtonInEditor,
+    recentArgsPresets: asStringArrayMap(composite?.recentArgsPresets)
   };
 };
 

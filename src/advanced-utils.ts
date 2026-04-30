@@ -4,6 +4,7 @@ export interface AdvancedRunValues {
   argsText: string;
   envText: string;
   cwd: string;
+  saveArgsPreset: boolean;
 }
 
 export interface AdvancedRunResolved {
@@ -12,6 +13,7 @@ export interface AdvancedRunResolved {
   args: string[];
   env: Record<string, string>;
   cwd: string | null;
+  saveArgsPreset: boolean;
 }
 
 export const parseArgs = (value: string): string[] => {
@@ -89,6 +91,7 @@ export const resolveAdvancedValues = (values: AdvancedRunValues): AdvancedRunRes
     commandOverride: values.commandOverride.trim().length > 0 ? values.commandOverride.trim() : null,
     args: parseArgs(values.argsText),
     env: parsedEnv.env,
-    cwd: values.cwd.trim().length > 0 ? values.cwd.trim() : null
+    cwd: values.cwd.trim().length > 0 ? values.cwd.trim() : null,
+    saveArgsPreset: values.saveArgsPreset
   };
 };

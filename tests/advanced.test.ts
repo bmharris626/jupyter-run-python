@@ -40,14 +40,16 @@ describe('resolveAdvancedValues', () => {
         commandOverride: ' python3 -u ',
         argsText: "--x 'hello world'",
         envText: 'APP_ENV=dev',
-        cwd: ' /tmp/project '
+        cwd: ' /tmp/project ',
+        saveArgsPreset: true
       })
     ).toEqual({
       kernelName: 'python3',
       commandOverride: 'python3 -u',
       args: ['--x', 'hello world'],
       env: { APP_ENV: 'dev' },
-      cwd: '/tmp/project'
+      cwd: '/tmp/project',
+      saveArgsPreset: true
     });
   });
 
@@ -58,7 +60,8 @@ describe('resolveAdvancedValues', () => {
         commandOverride: '',
         argsText: '',
         envText: 'bad-key=value',
-        cwd: ''
+        cwd: '',
+        saveArgsPreset: false
       })
     ).toThrow(/Invalid environment variable keys/);
   });
