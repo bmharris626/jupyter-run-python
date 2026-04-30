@@ -1,97 +1,171 @@
 # jupyterlab-run-python
 
-JupyterLab 4 extension to run `.py` scripts quickly from the editor and file browser.
+`jupyterlab-run-python` is a JupyterLab 4 extension that adds one-click Python script execution from the file editor and file browser.
 
-## Quickstart
+It is designed for users who edit `.py` files in JupyterLab and want fast execution in a terminal without manually copying commands.
 
-### 1) Build and test
+## What this extension does
+
+- Adds `Run` and `Run Advanced` actions for Python files.
+- Supports command resolution from active kernel context or default settings.
+- Executes scripts in JupyterLab terminals with a transparent command preview.
+- Adds quick actions to re-run or stop the most recent run.
+- Supports per-file recent argument presets in `Run Advanced`.
+
+## Compatibility
+
+- Python: `>=3.11,<4.0`
+- JupyterLab: `>=4.0,<5.0`
+- Node.js (build/dev): `>=20`
+
+## How it works
+
+### Run
+
+`Run` resolves the target `.py` file from the current editor or file browser selection, builds the execution command, and sends it to a JupyterLab terminal.
+
+Command source order:
+
+1. Active kernel name mapped through `kernelCommandMap`.
+2. Active kernel kernelspec absolute interpreter (`argv[0]`) when available.
+3. Fallback `defaultPythonCommand`.
+
+Script path behavior:
+
+- If `serverRootPath` is set, script paths are resolved to absolute filesystem paths (`<serverRootPath>/<contents-path>`).
+- This is the recommended mode for JupyterHub to avoid cwd/path mismatch issues.
+
+### Run Advanced
+
+`Run Advanced` opens a dialog where you can set:
+
+- Kernel profile
+- Command override (for example `python3`, `uv run python`, `poetry run python`)
+- Script arguments
+- Environment variables (`KEY=value`, one per line)
+- Working directory
+- Save args as recent preset for that file
+
+### Terminal behavior
+
+- Shows the full command first for transparency.
+- Supports either:
+  - new terminal per run (`openNewTerminalPerRun=true`), or
+  - reuse terminal mode (`openNewTerminalPerRun=false`).
+- Includes:
+  - `python-runner:rerun-latest`
+  - `python-runner:stop-latest`
+
+## Install (local development)
+
+From this repository root:
 
 ```bash
 npm ci
+npm run build
+jupyter labextension install . --no-build
+jupyter lab build
+```
+
+Verify:
+
+```bash
+jupyter labextension list
+```
+
+You should see `jupyterlab-run-python` enabled.
+
+## Install for JupyterHub validation
+
+This project currently ships as a JupyterLab extension package (not a `pip`/`conda` Python package wrapper yet).
+
+For JupyterHub validation, install it into the same environment used by your single-user Jupyter server.
+
+### Option A: admin-managed environment (recommended)
+
+Run in the JupyterHub single-user image/env during build or provisioning:
+
+```bash
+npm ci
+npm run build
+jupyter labextension install /path/to/jupyter-run-python --no-build
+jupyter lab build
+```
+
+### Option B: user-level validation (if terminal access is allowed)
+
+In a JupyterHub terminal:
+
+```bash
+git clone <repo-url> ~/jupyter-run-python
+cd ~/jupyter-run-python
+npm ci
+npm run build
+jupyter labextension install . --no-build
+jupyter lab build
+```
+
+If your JupyterHub deployment has readonly system paths, use the environment or image build path instead of per-user install.
+
+Recommended JupyterHub setting for reliable path execution:
+
+- Set `serverRootPath` to the single-user server filesystem root that matches Jupyter contents paths (for example `/home/jovyan`).
+
+## JupyterHub notebook validation test
+
+Use this to confirm end-to-end behavior after install.
+
+1. In JupyterLab, create `validation_script.py` with:
+
+```python
+import os
+print("validation ok")
+print("cwd:", os.getcwd())
+```
+
+2. Open `validation_script.py` in the file editor.
+3. Click `Run` in the editor toolbar.
+4. Confirm a terminal opens and prints:
+   - the command preview
+   - `validation ok`
+5. Run command palette action `Re-run Last Python Command` and confirm it executes again.
+6. Run command palette action `Stop Last Python Run` while a longer script is running and confirm interruption.
+7. Open `Run Advanced`, add args like `--demo value`, check save preset, run, then reopen advanced dialog and confirm the preset appears.
+
+## Commands
+
+- `python-runner:run`
+- `python-runner:run-advanced`
+- `python-runner:rerun-latest`
+- `python-runner:stop-latest`
+- `python-runner:about`
+
+## Settings
+
+Defined in `schema/plugin.json`:
+
+- `defaultPythonCommand`
+- `kernelCommandMap`
+- `openNewTerminalPerRun`
+- `defaultEnv`
+- `defaultCwdMode`
+- `showRunButtonInEditor`
+- `recentArgsPresets`
+- `serverRootPath`
+
+## Developer checks
+
+```bash
 npm run lint
 npm run typecheck
 npm run build
 npm test
 ```
 
-### 2) Install into local JupyterLab 4 environment
-
-```bash
-jupyter labextension install . --no-build
-jupyter lab build
-```
-
-### 3) Use the extension
-
-- Open any `.py` file in the editor and click `Run` or `Run Advanced` in the toolbar.
-- Or right-click a `.py` file in the file browser and select `Run Python File`.
-- Output is executed in a terminal tab and the full command is printed first for transparency.
-
-## Screenshots / GIF
-
-- Screenshot/GIF capture is planned as part of release polish.
-- Current implementation is testable via the quickstart steps above.
-
-## Compatibility targets
-
-- Python: `>=3.11,<4.0`
-- JupyterLab: `>=4.0,<5.0`
-- Node.js (build/dev): `>=20`
-
-## Scope
-
-- `Run Python File` for quick execution.
-- `Run Python File (Advanced)` for custom kernel, args, env vars, and working directory.
-- Terminal-backed execution with a new terminal tab per run.
-
-## Install notes
-
-- This repository currently ships as a JupyterLab prebuilt extension project.
-- A Python package wrapper (`pip`/`conda`) is not yet included.
-- Until wrapper packaging is added, install via `jupyter labextension install . --no-build`.
-
-## Commands and settings
-
-- Command IDs:
-  - `python-runner:run`
-  - `python-runner:run-advanced`
-  - `python-runner:rerun-latest`
-  - `python-runner:stop-latest`
-- Settings schema: `schema/plugin.json`
-  - `defaultPythonCommand`
-  - `kernelCommandMap`
-  - `openNewTerminalPerRun`
-  - `defaultEnv`
-  - `defaultCwdMode`
-  - `showRunButtonInEditor`
-  - `recentArgsPresets`
-
 ## Status
 
-This repository is under active build-out by major phases described in `BUILD_CHECKLIST.md`.
-
-## Dependency policy
-
-- Keep direct dependencies minimal and add new ones only when a phase needs them.
-- Prefer official JupyterLab packages and actively maintained projects.
-- Re-check transitive dependency health during each major phase checkpoint.
-- `node_modules/` is local-only and ignored by git.
-
-## Testing policy
-
-- Each major phase must include automated tests for changed behavior.
-- Minimum per phase: unit tests for new logic plus a manual verification checklist update.
-- CI enforces `npm run lint`, `npm run typecheck`, `npm run build`, and `npm test`.
-
-## Release docs
-
-- Changelog: `CHANGELOG.md`
-- Versioning plan: `VERSIONING.md`
+Phased implementation status is tracked in `BUILD_CHECKLIST.md`.
 
 ## License
 
 BSD-3-Clause.
-
-## Attribution
-
-This project design is loosely inspired by `gavincyi/jupyterlab-executor` (BSD-3-Clause), but is being implemented with a different UX focus (`.py` editor button + file browser right-click flow).

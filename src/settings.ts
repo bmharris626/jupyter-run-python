@@ -8,6 +8,7 @@ export interface RunnerSettings {
   defaultCwdMode: DefaultCwdMode;
   showRunButtonInEditor: boolean;
   recentArgsPresets: Record<string, string[]>;
+  serverRootPath: string | null;
 }
 
 const DEFAULT_SETTINGS: RunnerSettings = {
@@ -17,7 +18,21 @@ const DEFAULT_SETTINGS: RunnerSettings = {
   defaultEnv: {},
   defaultCwdMode: 'script_dir',
   showRunButtonInEditor: true,
-  recentArgsPresets: {}
+  recentArgsPresets: {},
+  serverRootPath: null
+};
+
+const asOptionalAbsolutePath = (value: unknown): string | null => {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (trimmed.length === 0 || !trimmed.startsWith('/')) {
+    return null;
+  }
+
+  return trimmed.replace(/\/+$/, '') || '/';
 };
 
 const asStringArrayMap = (value: unknown): Record<string, string[]> => {
@@ -94,8 +109,26 @@ export const readRunnerSettings = (composite: Record<string, unknown> | null | u
     defaultEnv: asStringMap(composite?.defaultEnv),
     defaultCwdMode,
     showRunButtonInEditor,
-    recentArgsPresets: asStringArrayMap(composite?.recentArgsPresets)
+    recentArgsPresets: asStringArrayMap(composite?.recentArgsPresets),
+    serverRootPath: asOptionalAbsolutePath(composite?.serverRootPath)
   };
+};
+
+export const resolveAbsoluteScriptPath = (
+  serverRootPath: string | null,
+  scriptPath: string
+): string => {
+  if (scriptPath.startsWith('/')) {
+    return scriptPath;
+  }
+
+  if (!serverRootPath) {
+    return scriptPath;
+  }
+
+  const normalizedRoot = serverRootPath === '/' ? '' : serverRootPath;
+  const normalizedScript = scriptPath.replace(/^\/+/, '');
+  return `${normalizedRoot}/${normalizedScript}`;
 };
 
 export const resolveDefaultCwd = (mode: DefaultCwdMode, scriptPath: string): string | null => {

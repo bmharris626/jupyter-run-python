@@ -3,6 +3,10 @@ export interface KernelCommandSettings {
   kernelCommandMap: Record<string, string>;
 }
 
+interface KernelSpecLike {
+  argv?: string[];
+}
+
 interface KernelLike {
   name?: string | null;
 }
@@ -76,4 +80,21 @@ export const resolveKernelCommandTemplate = (
   }
 
   return null;
+};
+
+export const resolveKernelAbsolutePython = (
+  kernelName: string | null,
+  kernelspecs: Record<string, KernelSpecLike | undefined>
+): string | null => {
+  if (!kernelName) {
+    return null;
+  }
+
+  const spec = kernelspecs[kernelName] ?? kernelspecs[kernelName.toLowerCase()];
+  const interpreter = spec?.argv?.[0]?.trim() ?? '';
+  if (!interpreter.startsWith('/')) {
+    return null;
+  }
+
+  return interpreter;
 };

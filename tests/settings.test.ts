@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readRunnerSettings, resolveDefaultCwd } from '../src/settings';
+import { readRunnerSettings, resolveAbsoluteScriptPath, resolveDefaultCwd } from '../src/settings';
 
 describe('readRunnerSettings', () => {
   it('loads valid settings values', () => {
@@ -10,7 +10,8 @@ describe('readRunnerSettings', () => {
       defaultEnv: { APP_ENV: 'dev' },
       defaultCwdMode: 'server_root',
       showRunButtonInEditor: false,
-      recentArgsPresets: { 'a.py': ['--foo 1', '--bar 2'] }
+      recentArgsPresets: { 'a.py': ['--foo 1', '--bar 2'] },
+      serverRootPath: '/home/jovyan/'
     });
 
     expect(settings.defaultPythonCommand).toBe('python3.12');
@@ -20,6 +21,7 @@ describe('readRunnerSettings', () => {
     expect(settings.defaultCwdMode).toBe('server_root');
     expect(settings.showRunButtonInEditor).toBe(false);
     expect(settings.recentArgsPresets['a.py']).toEqual(['--foo 1', '--bar 2']);
+    expect(settings.serverRootPath).toBe('/home/jovyan');
   });
 
   it('falls back for invalid inputs', () => {
@@ -28,7 +30,8 @@ describe('readRunnerSettings', () => {
       kernelCommandMap: { python3: 7 },
       defaultEnv: { A: 1 },
       defaultCwdMode: 'bad',
-      recentArgsPresets: { 'b.py': [1, '   ', '--ok'], 'x.py': 'nope' }
+      recentArgsPresets: { 'b.py': [1, '   ', '--ok'], 'x.py': 'nope' },
+      serverRootPath: 'relative/path'
     });
 
     expect(settings.defaultPythonCommand).toBe('python3');
@@ -38,6 +41,7 @@ describe('readRunnerSettings', () => {
     expect(settings.openNewTerminalPerRun).toBe(true);
     expect(settings.showRunButtonInEditor).toBe(true);
     expect(settings.recentArgsPresets['b.py']).toEqual(['--ok']);
+    expect(settings.serverRootPath).toBeNull();
   });
 });
 
@@ -50,5 +54,21 @@ describe('resolveDefaultCwd', () => {
   it('returns null when workspace_root or no directory is available', () => {
     expect(resolveDefaultCwd('workspace_root', 'a/b/run.py')).toBeNull();
     expect(resolveDefaultCwd('script_dir', 'run.py')).toBeNull();
+  });
+});
+
+describe('resolveAbsoluteScriptPath', () => {
+  it('joins server root and jupyter content path', () => {
+    expect(resolveAbsoluteScriptPath('/home/jovyan', 'projects/test.py')).toBe(
+      '/home/jovyan/projects/test.py'
+    );
+  });
+
+  it('keeps absolute script path unchanged', () => {
+    expect(resolveAbsoluteScriptPath('/home/jovyan', '/srv/shared/test.py')).toBe('/srv/shared/test.py');
+  });
+
+  it('falls back to original path when server root is unset', () => {
+    expect(resolveAbsoluteScriptPath(null, 'projects/test.py')).toBe('projects/test.py');
   });
 });

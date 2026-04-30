@@ -51,6 +51,12 @@
           "type": "string"
         }
       }
+    },
+    "serverRootPath": {
+      "type": "string",
+      "title": "Jupyter server root filesystem path",
+      "description": "Absolute filesystem path that corresponds to Jupyter contents root (for example /home/jovyan). Used to build absolute script paths.",
+      "default": ""
     }
   }
 }

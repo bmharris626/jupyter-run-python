@@ -13,8 +13,13 @@ import {
   buildTransparentExecutionCommand,
   wrapCommandWithCwd
 } from './execution';
-import { getActiveKernelName, resolveKernelCommandTemplate } from './kernel';
-import { readRunnerSettings, resolveDefaultCwd, RunnerSettings } from './settings';
+import { getActiveKernelName, resolveKernelAbsolutePython, resolveKernelCommandTemplate } from './kernel';
+import {
+  readRunnerSettings,
+  resolveAbsoluteScriptPath,
+  resolveDefaultCwd,
+  RunnerSettings
+} from './settings';
 
 const PLUGIN_ID = 'jupyterlab-run-python:plugin';
 
@@ -207,11 +212,14 @@ const plugin: JupyterFrontEndPlugin<void> = {
         }
 
         const kernelName = getActiveKernelName(app.shell.currentWidget);
+        const kernelspecs = app.serviceManager.kernelspecs.specs?.kernelspecs ?? {};
         const template = resolveKernelCommandTemplate(kernelName, runnerSettings.kernelCommandMap);
+        const kernelAbsolutePython = resolveKernelAbsolutePython(kernelName, kernelspecs);
+        const scriptPath = resolveAbsoluteScriptPath(runnerSettings.serverRootPath, target.path);
         const runCommand = buildRunCommandFromTemplate({
           template,
-          defaultPythonCommand: runnerSettings.defaultPythonCommand,
-          scriptPath: target.path
+          defaultPythonCommand: kernelAbsolutePython ?? runnerSettings.defaultPythonCommand,
+          scriptPath
         });
         if (!hasNonEmptyCommand(runCommand)) {
           await showDialog({
@@ -293,6 +301,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
         const mergedEnv = { ...defaultEnv, ...resolved.env };
         const templateFromKernel = resolveKernelCommandTemplate(resolved.kernelName, kernelCommandMap);
+        const kernelAbsolutePython = resolveKernelAbsolutePython(resolved.kernelName, kernelspecs);
+        const scriptPath = resolveAbsoluteScriptPath(runnerSettings.serverRootPath, target.path);
         if (!resolved.commandOverride && resolved.kernelName && !isLikelyPythonKernel(resolved.kernelName)) {
           const proceed = await showDialog({
             title: 'Non-Python kernel selected',
@@ -306,8 +316,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
         const runCommand = buildRunCommandFromTemplate({
           template: resolved.commandOverride ?? templateFromKernel,
-          defaultPythonCommand,
-          scriptPath: target.path,
+          defaultPythonCommand: kernelAbsolutePython ?? defaultPythonCommand,
+          scriptPath,
           args: resolved.args,
           env: mergedEnv
         });

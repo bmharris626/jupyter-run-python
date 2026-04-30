@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { getActiveKernelName, resolveKernelCommandTemplate } from '../src/kernel';
+import {
+  getActiveKernelName,
+  resolveKernelAbsolutePython,
+  resolveKernelCommandTemplate
+} from '../src/kernel';
 
 describe('getActiveKernelName', () => {
   it('reads runtime kernel name from session context', () => {
@@ -48,5 +52,20 @@ describe('resolveKernelCommandTemplate', () => {
 
   it('returns null when mapping is unavailable', () => {
     expect(resolveKernelCommandTemplate('python3', { pypy: 'pypy3' })).toBeNull();
+  });
+});
+
+describe('resolveKernelAbsolutePython', () => {
+  it('returns absolute interpreter from kernelspec argv', () => {
+    expect(
+      resolveKernelAbsolutePython('python3', {
+        python3: { argv: ['/opt/conda/bin/python', '-m', 'ipykernel_launcher', '-f', '{connection_file}'] }
+      })
+    ).toBe('/opt/conda/bin/python');
+  });
+
+  it('returns null for missing or non-absolute interpreter', () => {
+    expect(resolveKernelAbsolutePython('python3', {})).toBeNull();
+    expect(resolveKernelAbsolutePython('python3', { python3: { argv: ['python3'] } })).toBeNull();
   });
 });
