@@ -6,32 +6,32 @@ Repository rule: After each major phase (0-12), create a checkpoint commit and p
 
 ## 0) Project setup
 
-- [ ] Create project directory and initialize git repository.
-- [ ] Scaffold a JupyterLab 4 prebuilt extension (TypeScript).
-- [ ] Set package metadata (`name`, `description`, `license`, `repository`).
+- [x] Create project directory and initialize git repository.
+- [x] Scaffold a JupyterLab 4 prebuilt extension (TypeScript).
+- [x] Set package metadata (`name`, `description`, `license`, `repository`).
 - [ ] Set Node and Python version constraints in docs/CI.
-- [ ] Add BSD-3-Clause license and attribution note for reference inspiration (`jupyterlab-executor`).
+- [x] Add BSD-3-Clause license and attribution note for reference inspiration (`jupyterlab-executor`).
 
 ## 1) Dependencies and baseline wiring
 
-- [ ] Add required JupyterLab packages:
-  - [ ] `@jupyterlab/application`
-  - [ ] `@jupyterlab/apputils`
-  - [ ] `@jupyterlab/filebrowser`
-  - [ ] `@jupyterlab/fileeditor`
+- [x] Add required JupyterLab packages:
+  - [x] `@jupyterlab/application`
+  - [x] `@jupyterlab/apputils`
+  - [x] `@jupyterlab/filebrowser`
+  - [x] `@jupyterlab/fileeditor`
   - [ ] `@jupyterlab/launcher` (optional)
   - [ ] `@jupyterlab/mainmenu` (optional)
-  - [ ] `@jupyterlab/services`
-  - [ ] `@lumino/widgets`
+  - [x] `@jupyterlab/services`
+  - [x] `@lumino/widgets`
 - [ ] Confirm extension activates in JupyterLab 4 dev mode.
-- [ ] Add `schema/plugin.json` and register settings loading.
+- [x] Add `schema/plugin.json` and register settings loading.
 
 ## 2) Core command model
 
-- [ ] Define command IDs:
-  - [ ] `python-runner:run`
-  - [ ] `python-runner:run-advanced`
-- [ ] Register commands in command palette.
+- [x] Define command IDs:
+  - [x] `python-runner:run`
+  - [x] `python-runner:run-advanced`
+- [x] Register commands in command palette.
 - [ ] Add keyboard shortcut placeholder (disabled by default or unbound).
 
 Acceptance:

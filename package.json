@@ -1,0 +1,54 @@
+{
+  "name": "jupyterlab-run-python",
+  "version": "0.1.0",
+  "description": "JupyterLab extension to run Python scripts from editor and file browser.",
+  "keywords": [
+    "jupyter",
+    "jupyterlab",
+    "jupyterlab-extension",
+    "python"
+  ],
+  "license": "BSD-3-Clause",
+  "author": "bmharris",
+  "repository": {
+    "type": "git",
+    "url": "bmharris@n150:/git/jupyter-run-python"
+  },
+  "files": [
+    "lib/**/*",
+    "style/**/*",
+    "schema/**/*"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "jupyterlab": {
+    "extension": true,
+    "schemaDir": "schema"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rimraf lib tsconfig.tsbuildinfo",
+    "watch": "tsc -w -p tsconfig.json",
+    "lint": "eslint . --ext .ts",
+    "prepare": "npm run clean && npm run build"
+  },
+  "dependencies": {
+    "@jupyterlab/application": "^4.2.0",
+    "@jupyterlab/apputils": "^4.3.0",
+    "@jupyterlab/filebrowser": "^4.3.0",
+    "@jupyterlab/fileeditor": "^4.3.0",
+    "@jupyterlab/settingregistry": "^4.3.0",
+    "@jupyterlab/services": "^7.3.0",
+    "@lumino/widgets": "^2.5.0"
+  },
+  "devDependencies": {
+    "@jupyterlab/builder": "^4.2.0",
+    "@types/node": "^20.12.12",
+    "eslint": "^8.57.0",
+    "rimraf": "^5.0.7",
+    "typescript": "^5.8.3"
+  },
+  "sideEffects": [
+    "style/*.css"
+  ]
+}
