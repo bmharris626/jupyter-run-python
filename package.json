@@ -27,9 +27,10 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "clean": "rimraf lib tsconfig.tsbuildinfo",
+    "clean": "rm -rf lib tsconfig.tsbuildinfo",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "watch": "tsc -w -p tsconfig.json",
-    "lint": "eslint . --ext .ts",
     "prepare": "npm run clean && npm run build"
   },
   "dependencies": {
@@ -38,15 +39,12 @@
     "@jupyterlab/filebrowser": "^4.3.0",
     "@jupyterlab/fileeditor": "^4.3.0",
     "@jupyterlab/settingregistry": "^4.3.0",
-    "@jupyterlab/services": "^7.3.0",
-    "@lumino/widgets": "^2.5.0"
+    "@jupyterlab/services": "^7.3.0"
   },
   "devDependencies": {
     "@jupyterlab/builder": "^4.2.0",
-    "@types/node": "^20.12.12",
-    "eslint": "^8.57.0",
-    "rimraf": "^5.0.7",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^2.1.8"
   },
   "sideEffects": [
     "style/*.css"

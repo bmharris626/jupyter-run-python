@@ -3,13 +3,14 @@
 Goal: Build a JupyterLab 4.x extension that makes running `.py` files easy from both the editor and file browser, with `Run` and `Run Advanced` actions, using terminal-backed execution.
 
 Repository rule: After each major phase (0-12), create a checkpoint commit and push/sync to the homelab git server at `n150:/git`.
+Testing rule: Add or update automated tests in each major phase that changes behavior. Do not mark a phase complete without passing tests for that phase scope.
 
 ## 0) Project setup
 
 - [x] Create project directory and initialize git repository.
 - [x] Scaffold a JupyterLab 4 prebuilt extension (TypeScript).
 - [x] Set package metadata (`name`, `description`, `license`, `repository`).
-- [ ] Set Node and Python version constraints in docs/CI.
+- [x] Set Node and Python version constraints in docs/CI.
 - [x] Add BSD-3-Clause license and attribution note for reference inspiration (`jupyterlab-executor`).
 
 ## 1) Dependencies and baseline wiring
@@ -35,30 +36,30 @@ Repository rule: After each major phase (0-12), create a checkpoint commit and p
 - [ ] Add keyboard shortcut placeholder (disabled by default or unbound).
 
 Acceptance:
-- [ ] Commands appear in palette and execute a temporary stub action.
+- [x] Commands appear in palette and execute a temporary stub action.
 
 ## 3) Context resolution (.py target detection)
 
-- [ ] Implement context resolver for target path:
-  - [ ] Active file editor document path (for toolbar run)
-  - [ ] File browser selected item path (for context menu run)
-- [ ] Validate `.py` extension.
-- [ ] Display clear warning if no valid `.py` target is found.
+- [x] Implement context resolver for target path:
+  - [x] Active file editor document path (for toolbar run)
+  - [x] File browser selected item path (for context menu run)
+- [x] Validate `.py` extension.
+- [x] Display clear warning if no valid `.py` target is found.
 
 Acceptance:
-- [ ] For editor and browser, resolved script path is correct and logged/notified.
+- [x] For editor and browser, resolved script path is correct and logged/notified.
 
 ## 4) UI integration points
 
-- [ ] Add editor toolbar `Run` button for `.py` files.
-- [ ] Add optional toolbar secondary action or adjacent `Run Advanced` button.
-- [ ] Add file browser context menu items:
-  - [ ] `Run Python File`
-  - [ ] `Run Python File (Advanced)`
-- [ ] Add command palette labels and categories.
+- [x] Add editor toolbar `Run` button for `.py` files.
+- [x] Add optional toolbar secondary action or adjacent `Run Advanced` button.
+- [x] Add file browser context menu items:
+  - [x] `Run Python File`
+  - [x] `Run Python File (Advanced)`
+- [x] Add command palette labels and categories.
 
 Acceptance:
-- [ ] Buttons/menu items show only when applicable and trigger the right command.
+- [x] Buttons/menu items show only when applicable and trigger the right command.
 
 ## 5) Terminal-backed execution engine
 
