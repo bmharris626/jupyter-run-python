@@ -3,24 +3,48 @@ import { Dialog, ICommandPalette, ToolbarButton, showDialog } from '@jupyterlab/
 import { IFileBrowserFactory } from '@jupyterlab/filebrowser';
 import { IEditorTracker } from '@jupyterlab/fileeditor';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
+import { ITerminalTracker } from '@jupyterlab/terminal';
+import { AdvancedRunForm } from './advanced';
+import { resolveAdvancedValues } from './advanced-utils';
 import { resolveRunTarget } from './context';
+import { hasNonEmptyCommand, isLikelyPythonKernel } from './edge';
+import {
+  buildRunCommandFromTemplate,
+  buildTransparentExecutionCommand,
+  wrapCommandWithCwd
+} from './execution';
+import { getActiveKernelName, resolveKernelCommandTemplate } from './kernel';
+import { readRunnerSettings, resolveDefaultCwd, RunnerSettings } from './settings';
 
 const PLUGIN_ID = 'jupyterlab-run-python:plugin';
 
 const plugin: JupyterFrontEndPlugin<void> = {
   id: PLUGIN_ID,
   autoStart: true,
-  optional: [ISettingRegistry, ICommandPalette, IFileBrowserFactory, IEditorTracker],
+  optional: [
+    ISettingRegistry,
+    ICommandPalette,
+    IFileBrowserFactory,
+    IEditorTracker,
+    ITerminalTracker
+  ],
   activate: async (
     app: JupyterFrontEnd,
     settingRegistry: ISettingRegistry | null,
     palette: ICommandPalette | null,
     fileBrowserFactory: IFileBrowserFactory | null,
-    editorTracker: IEditorTracker | null
+    editorTracker: IEditorTracker | null,
+    terminalTracker: ITerminalTracker | null
   ) => {
-    if (settingRegistry) {
-      await settingRegistry.load(PLUGIN_ID);
-    }
+    const loadedSettings = settingRegistry ? await settingRegistry.load(PLUGIN_ID) : null;
+    let runnerSettings: RunnerSettings = readRunnerSettings(
+      (loadedSettings?.composite as Record<string, unknown> | undefined) ?? null
+    );
+
+    loadedSettings?.changed.connect(() => {
+      runnerSettings = readRunnerSettings(loadedSettings.composite as Record<string, unknown>);
+      app.commands.notifyCommandChanged();
+    });
 
     const getEditorPath = (): string | null => {
       const current = editorTracker?.currentWidget;
@@ -57,6 +81,79 @@ const plugin: JupyterFrontEndPlugin<void> = {
       });
     };
 
+    const envMapToText = (envMap: Record<string, string>): string => {
+      return Object.keys(envMap)
+        .sort()
+        .map(key => `${key}=${envMap[key]}`)
+        .join('\n');
+    };
+
+    const runInTerminal = async (command: string): Promise<boolean> => {
+      if (!terminalTracker || !app.serviceManager.terminals.isAvailable()) {
+        await showDialog({
+          title: 'Terminal unavailable',
+          body: 'Jupyter server terminals are disabled or the terminal extension is not loaded.',
+          buttons: [Dialog.okButton({ label: 'OK' })]
+        });
+        return false;
+      }
+
+      try {
+        const shouldCreateNew = runnerSettings.openNewTerminalPerRun || !terminalTracker.currentWidget;
+        if (shouldCreateNew) {
+          await app.commands.execute('terminal:create-new');
+        }
+
+        const terminalWidget = terminalTracker.currentWidget;
+        if (!terminalWidget) {
+          await showDialog({
+            title: 'Terminal launch failed',
+            body: 'Could not open a terminal session.',
+            buttons: [Dialog.okButton({ label: 'OK' })]
+          });
+          return false;
+        }
+
+        await app.shell.activateById(terminalWidget.id);
+        terminalWidget.content.session.send({
+          type: 'stdin',
+          content: [buildTransparentExecutionCommand(command) + '\n']
+        });
+        return true;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown terminal error.';
+        await showDialog({
+          title: 'Terminal execution failed',
+          body: `Could not start script execution: ${message}`,
+          buttons: [Dialog.okButton({ label: 'OK' })]
+        });
+        return false;
+      }
+    };
+
+    const ensureScriptExists = async (path: string): Promise<boolean> => {
+      try {
+        const model = await app.serviceManager.contents.get(path, { content: false });
+        if (model.type !== 'file') {
+          await showDialog({
+            title: 'Invalid script target',
+            body: `Target is not a file: ${path}`,
+            buttons: [Dialog.okButton({ label: 'OK' })]
+          });
+          return false;
+        }
+
+        return true;
+      } catch (_error) {
+        await showDialog({
+          title: 'Script not found',
+          body: `The selected script cannot be found on disk: ${path}`,
+          buttons: [Dialog.okButton({ label: 'OK' })]
+        });
+        return false;
+      }
+    };
+
     app.commands.addCommand('python-runner:run', {
       label: 'Run Python File',
       isVisible: () => resolveCurrentTarget().path !== null,
@@ -66,12 +163,27 @@ const plugin: JupyterFrontEndPlugin<void> = {
           await promptNoTarget();
           return;
         }
+        if (!(await ensureScriptExists(target.path))) {
+          return;
+        }
 
-        await showDialog({
-          title: 'Run Python File',
-          body: `Target resolved from ${target.source}: ${target.path}`,
-          buttons: [Dialog.okButton({ label: 'OK' })]
+        const kernelName = getActiveKernelName(app.shell.currentWidget);
+        const template = resolveKernelCommandTemplate(kernelName, runnerSettings.kernelCommandMap);
+        const runCommand = buildRunCommandFromTemplate({
+          template,
+          defaultPythonCommand: runnerSettings.defaultPythonCommand,
+          scriptPath: target.path
         });
+        if (!hasNonEmptyCommand(runCommand)) {
+          await showDialog({
+            title: 'Invalid run command',
+            body: 'Resolved run command is empty. Check extension settings.',
+            buttons: [Dialog.okButton({ label: 'OK' })]
+          });
+          return;
+        }
+        const cwd = resolveDefaultCwd(runnerSettings.defaultCwdMode, target.path);
+        await runInTerminal(wrapCommandWithCwd(runCommand, cwd));
       }
     });
 
@@ -84,12 +196,91 @@ const plugin: JupyterFrontEndPlugin<void> = {
           await promptNoTarget();
           return;
         }
+        if (!(await ensureScriptExists(target.path))) {
+          return;
+        }
 
-        await showDialog({
-          title: 'Run Python File (Advanced)',
-          body: `Advanced target resolved from ${target.source}: ${target.path}`,
-          buttons: [Dialog.okButton({ label: 'OK' })]
+        const defaultPythonCommand = runnerSettings.defaultPythonCommand;
+        const kernelCommandMap = runnerSettings.kernelCommandMap;
+        const defaultEnv = runnerSettings.defaultEnv;
+        const activeKernelName = getActiveKernelName(app.shell.currentWidget);
+        const kernelspecs = app.serviceManager.kernelspecs.specs?.kernelspecs ?? {};
+        const kernelOptions = Object.keys(kernelspecs);
+        const selectedKernel =
+          (activeKernelName && kernelOptions.includes(activeKernelName)
+            ? activeKernelName
+            : kernelOptions[0]) ?? '';
+
+        const form = new AdvancedRunForm({
+          targetPath: target.path,
+          kernels: kernelOptions,
+          selectedKernel,
+          defaultCommand: defaultPythonCommand,
+          defaultEnvText: envMapToText(defaultEnv)
         });
+
+        const result = await showDialog({
+          title: 'Run Python File (Advanced)',
+          body: form,
+          buttons: [Dialog.cancelButton({ label: 'Cancel' }), Dialog.okButton({ label: 'Run' })]
+        });
+
+        if (!result.button.accept) {
+          return;
+        }
+
+        if (!result.value) {
+          await showDialog({
+            title: 'Invalid advanced options',
+            body: 'Could not read advanced run options from dialog.',
+            buttons: [Dialog.okButton({ label: 'OK' })]
+          });
+          return;
+        }
+
+        let resolved;
+        try {
+          resolved = resolveAdvancedValues(result.value);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Invalid advanced run input.';
+          await showDialog({
+            title: 'Invalid advanced options',
+            body: message,
+            buttons: [Dialog.okButton({ label: 'OK' })]
+          });
+          return;
+        }
+
+        const mergedEnv = { ...defaultEnv, ...resolved.env };
+        const templateFromKernel = resolveKernelCommandTemplate(resolved.kernelName, kernelCommandMap);
+        if (!resolved.commandOverride && resolved.kernelName && !isLikelyPythonKernel(resolved.kernelName)) {
+          const proceed = await showDialog({
+            title: 'Non-Python kernel selected',
+            body: `Kernel "${resolved.kernelName}" does not look like a Python kernel. Continue with ${defaultPythonCommand}?`,
+            buttons: [Dialog.cancelButton({ label: 'Cancel' }), Dialog.okButton({ label: 'Continue' })]
+          });
+          if (!proceed.button.accept) {
+            return;
+          }
+        }
+
+        const runCommand = buildRunCommandFromTemplate({
+          template: resolved.commandOverride ?? templateFromKernel,
+          defaultPythonCommand,
+          scriptPath: target.path,
+          args: resolved.args,
+          env: mergedEnv
+        });
+        if (!hasNonEmptyCommand(runCommand)) {
+          await showDialog({
+            title: 'Invalid advanced command',
+            body: 'Resolved advanced command is empty. Set a command override or update kernel mapping.',
+            buttons: [Dialog.okButton({ label: 'OK' })]
+          });
+          return;
+        }
+        const fallbackCwd = resolveDefaultCwd(runnerSettings.defaultCwdMode, target.path);
+        await runInTerminal(wrapCommandWithCwd(runCommand, resolved.cwd ?? fallbackCwd));
       }
     });
 
@@ -128,6 +319,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
     if (editorTracker) {
       editorTracker.widgetAdded.connect((_sender, widget) => {
+        if (!runnerSettings.showRunButtonInEditor) {
+          return;
+        }
+
         const path = widget.context.path;
         if (!path.toLowerCase().endsWith('.py')) {
           return;

@@ -63,68 +63,68 @@ Acceptance:
 
 ## 5) Terminal-backed execution engine
 
-- [ ] Implement terminal session helper:
-  - [ ] Always open a new terminal tab per run (MVP default)
-  - [ ] Send command and stream output
-  - [ ] Focus terminal on launch
-- [ ] Implement robust shell quoting for file paths and args.
-- [ ] Prefix env vars in command safely.
-- [ ] Print expanded command before execution for transparency.
+- [x] Implement terminal session helper:
+  - [x] Always open a new terminal tab per run (MVP default)
+  - [x] Send command and stream output
+  - [x] Focus terminal on launch
+- [x] Implement robust shell quoting for file paths and args.
+- [x] Prefix env vars in command safely.
+- [x] Print expanded command before execution for transparency.
 
 Acceptance:
 - [ ] Running a script opens a new terminal and executes successfully.
 
 ## 6) Simple `Run` behavior
 
-- [ ] Resolve active kernel context when available.
-- [ ] Map kernel name/spec to command template via settings.
-- [ ] Fallback to `defaultPythonCommand` when mapping is unavailable.
-- [ ] Build and execute command for script path.
+- [x] Resolve active kernel context when available.
+- [x] Map kernel name/spec to command template via settings.
+- [x] Fallback to `defaultPythonCommand` when mapping is unavailable.
+- [x] Build and execute command for script path.
 
 Suggested command template:
 - [ ] ``{python} {script} {args}``
 
 Acceptance:
-- [ ] `Run` works with active Python kernel context and fallback path.
+- [x] `Run` works with active Python kernel context and fallback path.
 
 ## 7) `Run Advanced` dialog
 
-- [ ] Build modal dialog with fields:
-  - [ ] Kernel selector (from kernelspecs)
-  - [ ] Interpreter/command override
-  - [ ] Args string
-  - [ ] Env vars editor (key/value rows)
-  - [ ] Working directory
-- [ ] Validate input (bad env keys, empty required values).
-- [ ] Convert dialog values into final terminal command.
+- [x] Build modal dialog with fields:
+  - [x] Kernel selector (from kernelspecs)
+  - [x] Interpreter/command override
+  - [x] Args string
+  - [x] Env vars editor (key/value rows)
+  - [x] Working directory
+- [x] Validate input (bad env keys, empty required values).
+- [x] Convert dialog values into final terminal command.
 
 Acceptance:
-- [ ] User can run script with custom kernel/args/env/cwd from dialog.
+- [x] User can run script with custom kernel/args/env/cwd from dialog.
 
 ## 8) Settings schema and defaults
 
-- [ ] Implement `schema/plugin.json` with:
-  - [ ] `defaultPythonCommand` (default `python3`)
-  - [ ] `kernelCommandMap` (object map)
-  - [ ] `openNewTerminalPerRun` (default `true`)
-  - [ ] `defaultEnv` (object)
-  - [ ] `defaultCwdMode` (`script_dir|workspace_root|server_root`)
-  - [ ] `showRunButtonInEditor` (default `true`)
-- [ ] Load and apply settings reactively.
+- [x] Implement `schema/plugin.json` with:
+  - [x] `defaultPythonCommand` (default `python3`)
+  - [x] `kernelCommandMap` (object map)
+  - [x] `openNewTerminalPerRun` (default `true`)
+  - [x] `defaultEnv` (object)
+  - [x] `defaultCwdMode` (`script_dir|workspace_root|server_root`)
+  - [x] `showRunButtonInEditor` (default `true`)
+- [x] Load and apply settings reactively.
 
 Acceptance:
-- [ ] Changing settings affects subsequent runs without rebuild.
+- [x] Changing settings affects subsequent runs without rebuild.
 
 ## 9) Error handling and edge cases
 
-- [ ] Handle missing interpreter command gracefully.
-- [ ] Handle terminals API/session creation failures.
-- [ ] Handle paths with spaces and special characters.
-- [ ] Handle unsaved files or files not present on disk.
-- [ ] Handle non-python kernels selected in advanced flow.
+- [x] Handle missing interpreter command gracefully.
+- [x] Handle terminals API/session creation failures.
+- [x] Handle paths with spaces and special characters.
+- [x] Handle unsaved files or files not present on disk.
+- [x] Handle non-python kernels selected in advanced flow.
 
 Acceptance:
-- [ ] Failures show actionable error messages.
+- [x] Failures show actionable error messages.
 
 ## 10) Tests and verification
 
@@ -136,18 +136,18 @@ Manual verification checklist:
 - [ ] Validate behavior with path containing spaces.
 
 Automated checks:
-- [ ] Typecheck passes.
-- [ ] Lint passes.
-- [ ] Build passes.
-- [ ] Extension installs into clean JupyterLab 4 environment.
+- [x] Typecheck passes.
+- [x] Lint passes.
+- [x] Build passes.
+- [x] Extension installs into clean JupyterLab 4 environment.
 
 ## 11) Packaging and release readiness
 
-- [ ] Add README with screenshots/GIF and quickstart.
-- [ ] Add install instructions (`pip`/`conda` if Python package wrapper is used).
-- [ ] Add changelog and versioning plan.
-- [ ] Add CI for build + lint + typecheck.
-- [ ] Verify license and attribution notices.
+- [x] Add README with screenshots/GIF and quickstart.
+- [x] Add install instructions (`pip`/`conda` if Python package wrapper is used).
+- [x] Add changelog and versioning plan.
+- [x] Add CI for build + lint + typecheck.
+- [x] Verify license and attribution notices.
 
 ## 12) Post-MVP enhancements (optional)
 

@@ -28,8 +28,10 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "clean": "rm -rf lib tsconfig.tsbuildinfo",
+    "lint": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "watch": "tsc -w -p tsconfig.json",
     "prepare": "npm run clean && npm run build"
   },
@@ -39,7 +41,9 @@
     "@jupyterlab/filebrowser": "^4.3.0",
     "@jupyterlab/fileeditor": "^4.3.0",
     "@jupyterlab/settingregistry": "^4.3.0",
-    "@jupyterlab/services": "^7.3.0"
+    "@jupyterlab/services": "^7.3.0",
+    "@jupyterlab/terminal": "^4.3.0",
+    "@lumino/widgets": "^2.7.1"
   },
   "devDependencies": {
     "@jupyterlab/builder": "^4.2.0",

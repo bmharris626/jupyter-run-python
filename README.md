@@ -2,6 +2,36 @@
 
 JupyterLab 4 extension to run `.py` scripts quickly from the editor and file browser.
 
+## Quickstart
+
+### 1) Build and test
+
+```bash
+npm ci
+npm run lint
+npm run typecheck
+npm run build
+npm test
+```
+
+### 2) Install into local JupyterLab 4 environment
+
+```bash
+jupyter labextension install . --no-build
+jupyter lab build
+```
+
+### 3) Use the extension
+
+- Open any `.py` file in the editor and click `Run` or `Run Advanced` in the toolbar.
+- Or right-click a `.py` file in the file browser and select `Run Python File`.
+- Output is executed in a terminal tab and the full command is printed first for transparency.
+
+## Screenshots / GIF
+
+- Screenshot/GIF capture is planned as part of release polish.
+- Current implementation is testable via the quickstart steps above.
+
 ## Compatibility targets
 
 - Python: `>=3.11,<4.0`
@@ -13,6 +43,25 @@ JupyterLab 4 extension to run `.py` scripts quickly from the editor and file bro
 - `Run Python File` for quick execution.
 - `Run Python File (Advanced)` for custom kernel, args, env vars, and working directory.
 - Terminal-backed execution with a new terminal tab per run.
+
+## Install notes
+
+- This repository currently ships as a JupyterLab prebuilt extension project.
+- A Python package wrapper (`pip`/`conda`) is not yet included.
+- Until wrapper packaging is added, install via `jupyter labextension install . --no-build`.
+
+## Commands and settings
+
+- Command IDs:
+  - `python-runner:run`
+  - `python-runner:run-advanced`
+- Settings schema: `schema/plugin.json`
+  - `defaultPythonCommand`
+  - `kernelCommandMap`
+  - `openNewTerminalPerRun`
+  - `defaultEnv`
+  - `defaultCwdMode`
+  - `showRunButtonInEditor`
 
 ## Status
 
@@ -29,7 +78,12 @@ This repository is under active build-out by major phases described in `BUILD_CH
 
 - Each major phase must include automated tests for changed behavior.
 - Minimum per phase: unit tests for new logic plus a manual verification checklist update.
-- CI phase will enforce `npm run build` and `npm test`.
+- CI enforces `npm run lint`, `npm run typecheck`, `npm run build`, and `npm test`.
+
+## Release docs
+
+- Changelog: `CHANGELOG.md`
+- Versioning plan: `VERSIONING.md`
 
 ## License
 
