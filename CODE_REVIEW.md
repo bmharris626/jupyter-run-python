@@ -24,7 +24,7 @@ Generated from code review of `jupyterlab-run-python`. All 42 tests pass and typ
 
 ## `src/advanced.ts`
 
-- [ ] **Move inline styles to `style/index.css`** — all form layout (`display: block`, `marginTop`, `width: 100%`, etc.) is set via inline JS `style` assignments. `style/index.css` exists but contains only a placeholder comment. Moving these to CSS classes makes the form theme-aware and allows JupyterLab theme overrides to target extension elements via class selectors.
+- [x] **Move inline styles to `style/index.css`** — all form layout (`display: block`, `marginTop`, `width: 100%`, etc.) is set via inline JS `style` assignments. `style/index.css` exists but contains only a placeholder comment. Moving these to CSS classes makes the form theme-aware and allows JupyterLab theme overrides to target extension elements via class selectors.
 
 ## `package.json` scripts
 

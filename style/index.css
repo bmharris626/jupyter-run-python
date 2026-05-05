@@ -1,1 +1,24 @@
-/* Reserved for extension styles. */
+.jp-pythonRunner-advancedForm label {
+  display: block;
+  margin-top: 8px;
+}
+
+.jp-pythonRunner-advancedForm input,
+.jp-pythonRunner-advancedForm select,
+.jp-pythonRunner-advancedForm textarea {
+  width: 100%;
+}
+
+.jp-pythonRunner-targetLabel {
+  margin-bottom: 8px;
+}
+
+.jp-pythonRunner-argsInput,
+.jp-pythonRunner-savePresetLabel {
+  margin-top: 6px;
+}
+
+.jp-pythonRunner-advancedForm .jp-pythonRunner-savePresetCheckbox {
+  margin-right: 6px;
+  width: auto;
+}

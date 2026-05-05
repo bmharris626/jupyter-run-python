@@ -24,19 +24,16 @@ export class AdvancedRunForm extends Widget {
     const createLabel = (text: string): HTMLLabelElement => {
       const label = document.createElement('label');
       label.textContent = text;
-      label.style.display = 'block';
-      label.style.marginTop = '8px';
       return label;
     };
 
     const targetLabel = document.createElement('div');
+    targetLabel.className = 'jp-pythonRunner-targetLabel';
     targetLabel.textContent = `Script: ${options.targetPath}`;
-    targetLabel.style.marginBottom = '8px';
     this.node.appendChild(targetLabel);
 
     this.node.appendChild(createLabel('Kernel'));
     this.kernelSelect = document.createElement('select');
-    this.kernelSelect.style.width = '100%';
     for (const kernel of options.kernels) {
       const option = document.createElement('option');
       option.value = kernel;
@@ -50,12 +47,10 @@ export class AdvancedRunForm extends Widget {
     this.commandInput = document.createElement('input');
     this.commandInput.type = 'text';
     this.commandInput.placeholder = options.defaultCommand;
-    this.commandInput.style.width = '100%';
     this.node.appendChild(this.commandInput);
 
     this.node.appendChild(createLabel('Arguments'));
     this.argsPresetSelect = document.createElement('select');
-    this.argsPresetSelect.style.width = '100%';
     const customOption = document.createElement('option');
     customOption.value = '';
     customOption.text = 'Custom args';
@@ -69,10 +64,9 @@ export class AdvancedRunForm extends Widget {
     this.node.appendChild(this.argsPresetSelect);
 
     this.argsInput = document.createElement('input');
+    this.argsInput.className = 'jp-pythonRunner-argsInput';
     this.argsInput.type = 'text';
     this.argsInput.placeholder = '--flag value';
-    this.argsInput.style.width = '100%';
-    this.argsInput.style.marginTop = '6px';
     this.node.appendChild(this.argsInput);
 
     this.argsPresetSelect.onchange = () => {
@@ -82,11 +76,10 @@ export class AdvancedRunForm extends Widget {
     };
 
     const savePresetLabel = document.createElement('label');
-    savePresetLabel.style.display = 'block';
-    savePresetLabel.style.marginTop = '6px';
+    savePresetLabel.className = 'jp-pythonRunner-savePresetLabel';
     this.savePresetCheckbox = document.createElement('input');
     this.savePresetCheckbox.type = 'checkbox';
-    this.savePresetCheckbox.style.marginRight = '6px';
+    this.savePresetCheckbox.className = 'jp-pythonRunner-savePresetCheckbox';
     savePresetLabel.appendChild(this.savePresetCheckbox);
     savePresetLabel.appendChild(document.createTextNode('Save args as recent preset for this file'));
     this.node.appendChild(savePresetLabel);
@@ -94,7 +87,6 @@ export class AdvancedRunForm extends Widget {
     this.node.appendChild(createLabel('Environment (KEY=value per line)'));
     this.envInput = document.createElement('textarea');
     this.envInput.rows = 5;
-    this.envInput.style.width = '100%';
     this.envInput.value = options.defaultEnvText;
     this.node.appendChild(this.envInput);
 
@@ -102,7 +94,6 @@ export class AdvancedRunForm extends Widget {
     this.cwdInput = document.createElement('input');
     this.cwdInput.type = 'text';
     this.cwdInput.placeholder = 'Leave empty to use server default';
-    this.cwdInput.style.width = '100%';
     this.node.appendChild(this.cwdInput);
   }
 
