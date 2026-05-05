@@ -9,7 +9,7 @@ Generated from code review of `jupyterlab-run-python`. All 42 tests pass and typ
 
 ## `tsconfig.json`
 
-- [ ] **Fix `"include": ["src/*"]` → `"src/**/*"`** — the glob `*` does not recurse into subdirectories. Any files added under `src/utils/`, `src/components/`, etc. will be silently skipped by the compiler.
+- [x] **Fix `"include": ["src/*"]` → `"src/**/*"`** — the glob `*` does not recurse into subdirectories. Any files added under `src/utils/`, `src/components/`, etc. will be silently skipped by the compiler.
 - [x] **Change `"moduleResolution": "node"` → `"bundler"`** — `"node"` resolution paired with `"module": "esnext"` applies CommonJS-era lookup rules to ESM output. The correct value for JupyterLab extensions (which use webpack via `@jupyterlab/builder`) is `"bundler"`. No visible runtime bug today, but TypeScript is not checking imports the same way the bundler resolves them.
 - [ ] **Bump `"lib": ["dom", "es2018"]` to `"es2020"` or `"es2022"`** — `es2018` predates `Object.fromEntries`, `Promise.allSettled`, optional chaining, and nullish coalescing. Bumping enables cleaner patterns for future code.
 
