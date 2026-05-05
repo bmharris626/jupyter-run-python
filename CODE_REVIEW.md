@@ -16,7 +16,7 @@ Generated from code review of `jupyterlab-run-python`. All 42 tests pass and typ
 ## `src/index.ts`
 
 - [x] **Fix `envMapToText` newline corruption** — `envMapToText` converts `defaultEnv` to a `KEY=value` string for the dialog, then `parseEnvText` parses it back. Any env value containing a newline will be silently split into two lines, with the second becoming an invalid key. Either escape newlines in values, reject them at settings-read time, or pass the env map directly to `AdvancedRunForm` and avoid the round-trip.
-- [ ] **Improve `getTrackedTerminalWidget` terminal lookup** — currently iterates all open terminal widgets via `forEach` with an external mutable `matched` variable to find one by ID. Check if the Lumino tracker exposes `.find()` and use it; if not, consider storing a direct widget reference alongside `preferredReusableTerminalId` to avoid the scan.
+- [x] **Improve `getTrackedTerminalWidget` terminal lookup** — currently iterates all open terminal widgets via `forEach` with an external mutable `matched` variable to find one by ID. Check if the Lumino tracker exposes `.find()` and use it; if not, consider storing a direct widget reference alongside `preferredReusableTerminalId` to avoid the scan.
 
 ## `src/execution.ts` / `src/advanced-utils.ts`
 

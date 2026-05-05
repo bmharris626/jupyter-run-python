@@ -107,14 +107,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         return null;
       }
 
-      let matched: ITerminalTracker['currentWidget'] = null;
-      terminalTracker.forEach(widget => {
-        if (widget.id === preferredReusableTerminalId) {
-          matched = widget;
-        }
-      });
-
-      return matched;
+      return terminalTracker.find(widget => widget.id === preferredReusableTerminalId) ?? null;
     };
 
     const runInTerminal = async (command: string): Promise<boolean> => {
