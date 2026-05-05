@@ -1,3 +1,5 @@
+import { isValidEnvKey } from './env';
+
 export interface AdvancedRunValues {
   kernelName: string;
   commandOverride: string;
@@ -104,7 +106,7 @@ export const parseEnvText = (value: string): { env: Record<string, string>; inva
 
     const key = line.slice(0, equals).trim();
     const val = decodeEnvValue(line.slice(equals + 1));
-    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) {
+    if (!isValidEnvKey(key)) {
       invalidKeys.push(key);
       continue;
     }

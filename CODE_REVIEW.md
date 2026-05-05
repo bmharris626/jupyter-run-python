@@ -20,7 +20,7 @@ Generated from code review of `jupyterlab-run-python`. All 42 tests pass and typ
 
 ## `src/execution.ts` / `src/advanced-utils.ts`
 
-- [ ] **Make invalid env key handling consistent** — `buildEnvPrefix` silently drops keys with invalid names (characters outside `[A-Za-z_][A-Za-z0-9_]*`), while `parseEnvText` throws on the same keys. Invalid keys from `defaultEnv` (settings) are silently dropped with no user feedback; the same keys entered in the Advanced dialog show an error. Either warn in both places or reject at settings-read time in `readRunnerSettings`.
+- [x] **Make invalid env key handling consistent** — `buildEnvPrefix` silently drops keys with invalid names (characters outside `[A-Za-z_][A-Za-z0-9_]*`), while `parseEnvText` throws on the same keys. Invalid keys from `defaultEnv` (settings) are silently dropped with no user feedback; the same keys entered in the Advanced dialog show an error. Either warn in both places or reject at settings-read time in `readRunnerSettings`.
 
 ## `src/advanced.ts`
 

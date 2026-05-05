@@ -1,3 +1,5 @@
+import { isValidEnvKey } from './env';
+
 export interface RunCommandOptions {
   pythonCommand: string;
   scriptPath: string;
@@ -25,7 +27,7 @@ export const buildEnvPrefix = (env: Record<string, string> = {}): string => {
   const parts: string[] = [];
 
   for (const key of Object.keys(env).sort()) {
-    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) {
+    if (!isValidEnvKey(key)) {
       continue;
     }
 

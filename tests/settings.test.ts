@@ -7,7 +7,7 @@ describe('readRunnerSettings', () => {
       defaultPythonCommand: 'python3.12',
       kernelCommandMap: { python3: '{python} -u {script} {args}' },
       openNewTerminalPerRun: false,
-      defaultEnv: { APP_ENV: 'dev' },
+      defaultEnv: { APP_ENV: 'dev', 'bad-key': 'ignored' },
       defaultCwdMode: 'server_root',
       showRunButtonInEditor: false,
       recentArgsPresets: { 'a.py': ['--foo 1', '--bar 2'] },
@@ -17,7 +17,7 @@ describe('readRunnerSettings', () => {
     expect(settings.defaultPythonCommand).toBe('python3.12');
     expect(settings.kernelCommandMap.python3).toBe('{python} -u {script} {args}');
     expect(settings.openNewTerminalPerRun).toBe(false);
-    expect(settings.defaultEnv.APP_ENV).toBe('dev');
+    expect(settings.defaultEnv).toEqual({ APP_ENV: 'dev' });
     expect(settings.defaultCwdMode).toBe('server_root');
     expect(settings.showRunButtonInEditor).toBe(false);
     expect(settings.recentArgsPresets['a.py']).toEqual(['--foo 1', '--bar 2']);

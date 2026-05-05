@@ -1,3 +1,5 @@
+import { isValidEnvKey } from './env';
+
 export type DefaultCwdMode = 'script_dir' | 'workspace_root' | 'server_root';
 
 export interface RunnerSettings {
@@ -79,6 +81,17 @@ const asStringMap = (value: unknown): Record<string, string> => {
   return result;
 };
 
+const asEnvMap = (value: unknown): Record<string, string> => {
+  const result = asStringMap(value);
+  for (const key of Object.keys(result)) {
+    if (!isValidEnvKey(key)) {
+      delete result[key];
+    }
+  }
+
+  return result;
+};
+
 export const readRunnerSettings = (composite: Record<string, unknown> | null | undefined): RunnerSettings => {
   const defaultPythonRaw = composite?.defaultPythonCommand;
   const defaultPythonCommand =
@@ -106,7 +119,7 @@ export const readRunnerSettings = (composite: Record<string, unknown> | null | u
     defaultPythonCommand,
     kernelCommandMap: asStringMap(composite?.kernelCommandMap),
     openNewTerminalPerRun,
-    defaultEnv: asStringMap(composite?.defaultEnv),
+    defaultEnv: asEnvMap(composite?.defaultEnv),
     defaultCwdMode,
     showRunButtonInEditor,
     recentArgsPresets: asStringArrayMap(composite?.recentArgsPresets),
