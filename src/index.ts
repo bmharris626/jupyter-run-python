@@ -5,7 +5,7 @@ import { IEditorTracker } from '@jupyterlab/fileeditor';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { ITerminalTracker } from '@jupyterlab/terminal';
 import { AdvancedRunForm } from './advanced';
-import { resolveAdvancedValues } from './advanced-utils';
+import { formatEnvText, resolveAdvancedValues } from './advanced-utils';
 import { resolveRunTarget } from './context';
 import { hasNonEmptyCommand, isLikelyPythonKernel } from './edge';
 import {
@@ -84,13 +84,6 @@ const plugin: JupyterFrontEndPlugin<void> = {
         activeEditorPath: getEditorPath(),
         fileBrowserSelectionPath: getFileBrowserPath()
       });
-    };
-
-    const envMapToText = (envMap: Record<string, string>): string => {
-      return Object.keys(envMap)
-        .sort()
-        .map(key => `${key}=${envMap[key]}`)
-        .join('\n');
     };
 
     let latestRunCommand: string | null = null;
@@ -263,7 +256,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
           kernels: kernelOptions,
           selectedKernel,
           defaultCommand: defaultPythonCommand,
-          defaultEnvText: envMapToText(defaultEnv),
+          defaultEnvText: formatEnvText(defaultEnv),
           recentArgsPresets: runnerSettings.recentArgsPresets[target.path] ?? []
         });
 

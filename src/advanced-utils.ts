@@ -16,6 +16,41 @@ export interface AdvancedRunResolved {
   saveArgsPreset: boolean;
 }
 
+export const formatEnvText = (envMap: Record<string, string>): string => {
+  return Object.keys(envMap)
+    .sort()
+    .map(key => `${key}=${envMap[key].replace(/\\/g, '\\\\').replace(/\n/g, '\\n')}`)
+    .join('\n');
+};
+
+const decodeEnvValue = (value: string): string => {
+  let decoded = '';
+  for (let index = 0; index < value.length; index += 1) {
+    const ch = value[index];
+    if (ch !== '\\' || index === value.length - 1) {
+      decoded += ch;
+      continue;
+    }
+
+    const next = value[index + 1];
+    if (next === 'n') {
+      decoded += '\n';
+      index += 1;
+      continue;
+    }
+
+    if (next === '\\') {
+      decoded += '\\';
+      index += 1;
+      continue;
+    }
+
+    decoded += ch;
+  }
+
+  return decoded;
+};
+
 export const parseArgs = (value: string): string[] => {
   const tokens: string[] = [];
   let current = '';
@@ -68,7 +103,7 @@ export const parseEnvText = (value: string): { env: Record<string, string>; inva
     }
 
     const key = line.slice(0, equals).trim();
-    const val = line.slice(equals + 1);
+    const val = decodeEnvValue(line.slice(equals + 1));
     if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) {
       invalidKeys.push(key);
       continue;
