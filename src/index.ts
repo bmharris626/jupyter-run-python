@@ -174,7 +174,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         }
 
         return true;
-      } catch (_error) {
+      } catch {
         await showDialog({
           title: 'Script not found',
           body: `The selected script cannot be found on disk: ${path}`,

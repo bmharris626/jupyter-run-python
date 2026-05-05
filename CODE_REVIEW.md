@@ -28,7 +28,7 @@ Generated from code review of `jupyterlab-run-python`. All 42 tests pass and typ
 
 ## `package.json` scripts
 
-- [ ] **Add a real linter (ESLint or Biome)** — `npm run lint` is currently just `tsc --noEmit` (identical to `typecheck`). TypeScript strict mode catches type errors but not unused imports, floating promises, import ordering, or other common pitfalls. The release checklist in `VERSIONING.md` lists `npm run lint` as a pre-release gate, so this should be a distinct check. JupyterLab's own extensions use ESLint with `@typescript-eslint`.
+- [x] **Add a real linter (ESLint or Biome)** — `npm run lint` is currently just `tsc --noEmit` (identical to `typecheck`). TypeScript strict mode catches type errors but not unused imports, floating promises, import ordering, or other common pitfalls. The release checklist in `VERSIONING.md` lists `npm run lint` as a pre-release gate, so this should be a distinct check. JupyterLab's own extensions use ESLint with `@typescript-eslint`.
 
 ## Tests
 
