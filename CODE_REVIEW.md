@@ -32,4 +32,4 @@ Generated from code review of `jupyterlab-run-python`. All 42 tests pass and typ
 
 ## Tests
 
-- [ ] **Add tests for `AdvancedRunForm` (`src/advanced.ts`)** — `tests/advanced.test.ts` only imports from `advanced-utils.ts`; the `AdvancedRunForm` Widget class has zero coverage. The form's `getValue()` method (the integration between DOM inputs and the returned `AdvancedRunValues`) is untested. Add `environment: 'jsdom'` to the vitest config (or a per-file override) to enable DOM testing.
+- [x] **Add tests for `AdvancedRunForm` (`src/advanced.ts`)** — `tests/advanced.test.ts` only imports from `advanced-utils.ts`; the `AdvancedRunForm` Widget class has zero coverage. The form's `getValue()` method (the integration between DOM inputs and the returned `AdvancedRunValues`) is untested. Add `environment: 'jsdom'` to the vitest config (or a per-file override) to enable DOM testing.
