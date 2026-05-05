@@ -56,18 +56,21 @@ Script path behavior:
   - `python-runner:rerun-latest`
   - `python-runner:stop-latest`
 
-## Install (local development)
+## Install (recommended)
 
-From this repository root:
+Use `pip`/`conda` style installation for JupyterLab 4 prebuilt extensions.
 
 ```bash
-npm ci
-npm run build
-jupyter labextension install . --no-build
-jupyter lab build
+pip install jupyterlab-run-python
 ```
 
-Verify:
+For local source validation:
+
+```bash
+pip install .
+```
+
+Then verify:
 
 ```bash
 jupyter labextension list
@@ -75,21 +78,25 @@ jupyter labextension list
 
 You should see `jupyterlab-run-python` enabled.
 
+## Local JS build (contributors)
+
+From this repository root:
+
+```bash
+npm ci
+npm run build
+```
+
 ## Install for JupyterHub validation
 
-This project currently ships as a JupyterLab extension package (not a `pip`/`conda` Python package wrapper yet).
-
-For JupyterHub validation, install it into the same environment used by your single-user Jupyter server.
+Install the Python package into the same environment used by your single-user Jupyter server.
 
 ### Option A: admin-managed environment (recommended)
 
 Run in the JupyterHub single-user image/env during build or provisioning:
 
 ```bash
-npm ci
-npm run build
-jupyter labextension install /path/to/jupyter-run-python --no-build
-jupyter lab build
+pip install /path/to/jupyter-run-python
 ```
 
 ### Option B: user-level validation (if terminal access is allowed)
@@ -101,8 +108,7 @@ git clone <repo-url> ~/jupyter-run-python
 cd ~/jupyter-run-python
 npm ci
 npm run build
-jupyter labextension install . --no-build
-jupyter lab build
+pip install .
 ```
 
 If your JupyterHub deployment has readonly system paths, use the environment or image build path instead of per-user install.

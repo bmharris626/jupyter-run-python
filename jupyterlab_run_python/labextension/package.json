@@ -24,7 +24,11 @@
   "jupyterlab": {
     "extension": "lib/index.js",
     "outputDir": "jupyterlab_run_python/labextension",
-    "schemaDir": "schema"
+    "schemaDir": "schema",
+    "_build": {
+      "load": "static/remoteEntry.5afcdd1bbe94388b4cdc.js",
+      "extension": "./extension"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",

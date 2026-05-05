@@ -1,0 +1,5 @@
+{
+  "packageManager": "python",
+  "packageName": "jupyterlab-run-python",
+  "uninstallInstructions": "Use `pip uninstall jupyterlab-run-python` to remove the extension."
+}

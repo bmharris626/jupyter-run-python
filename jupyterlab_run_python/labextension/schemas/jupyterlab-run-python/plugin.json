@@ -1,0 +1,62 @@
+{
+  "title": "JupyterLab Run Python Settings",
+  "description": "Settings for the JupyterLab Run Python extension.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "defaultPythonCommand": {
+      "type": "string",
+      "title": "Default Python command",
+      "description": "Interpreter command used when no kernel mapping is found.",
+      "default": "python3"
+    },
+    "kernelCommandMap": {
+      "type": "object",
+      "title": "Kernel command map",
+      "description": "Map from kernel name to shell command template.",
+      "default": {
+        "python3": "python3",
+        "python": "python"
+      }
+    },
+    "openNewTerminalPerRun": {
+      "type": "boolean",
+      "title": "Open new terminal per run",
+      "default": true
+    },
+    "defaultEnv": {
+      "type": "object",
+      "title": "Default environment variables",
+      "default": {}
+    },
+    "defaultCwdMode": {
+      "type": "string",
+      "title": "Default working directory mode",
+      "enum": ["script_dir", "workspace_root", "server_root"],
+      "default": "script_dir"
+    },
+    "showRunButtonInEditor": {
+      "type": "boolean",
+      "title": "Show Run button in editor toolbar",
+      "default": true
+    },
+    "recentArgsPresets": {
+      "type": "object",
+      "title": "Recent args presets by file",
+      "description": "Map of script path to a recent list of args strings.",
+      "default": {},
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "serverRootPath": {
+      "type": "string",
+      "title": "Jupyter server root filesystem path",
+      "description": "Absolute filesystem path that corresponds to Jupyter contents root (for example /home/jovyan). Used to build absolute script paths.",
+      "default": ""
+    }
+  }
+}
