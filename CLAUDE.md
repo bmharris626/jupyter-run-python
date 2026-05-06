@@ -88,4 +88,4 @@ Tests live in `tests/` and use vitest in a Node environment (no browser). Each s
 
 Git remotes:
 - `n150`: `bmharris@n150:/git/jupyter-run-python` — homelab mirror, push after checkpoint commits
-- `origin`: `https://github.com/bmharris/jupyter-run-python` — public GitHub
+- `github`: `git@github.com:bmharris626/jupyter-run-python.git` — public GitHub

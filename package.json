@@ -12,7 +12,7 @@
   "author": "bmharris",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bmharris/jupyter-run-python"
+    "url": "https://github.com/bmharris626/jupyter-run-python"
   },
   "files": [
     "lib/**/*",

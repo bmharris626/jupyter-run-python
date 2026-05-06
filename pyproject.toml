@@ -33,7 +33,7 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/bmharris/jupyter-run-python"
+Homepage = "https://github.com/bmharris626/jupyter-run-python"
 
 [tool.hatch.version]
 source = "nodejs"
