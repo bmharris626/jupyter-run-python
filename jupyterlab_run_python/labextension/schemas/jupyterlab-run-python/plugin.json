@@ -22,7 +22,7 @@
     "openNewTerminalPerRun": {
       "type": "boolean",
       "title": "Open new terminal per run",
-      "default": true
+      "default": false
     },
     "defaultEnv": {
       "type": "object",

@@ -1,16 +1,18 @@
 import { JupyterFrontEnd, JupyterFrontEndPlugin } from '@jupyterlab/application';
-import { Dialog, ICommandPalette, ToolbarButton, showDialog } from '@jupyterlab/apputils';
+import { CommandToolbarButton, Dialog, ICommandPalette, showDialog } from '@jupyterlab/apputils';
+import { PageConfig } from '@jupyterlab/coreutils';
 import { IFileBrowserFactory } from '@jupyterlab/filebrowser';
 import { IEditorTracker } from '@jupyterlab/fileeditor';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { ITerminalTracker } from '@jupyterlab/terminal';
+import { fastForwardIcon, runIcon, stopIcon } from '@jupyterlab/ui-components';
+import { SplitPanel } from '@lumino/widgets';
 import { AdvancedRunForm } from './advanced';
 import { formatEnvText, resolveAdvancedValues } from './advanced-utils';
 import { resolveRunTarget } from './context';
 import { hasNonEmptyCommand, isLikelyPythonKernel } from './edge';
 import {
   buildRunCommandFromTemplate,
-  buildTransparentExecutionCommand,
   wrapCommandWithCwd
 } from './execution';
 import { getActiveKernelName, resolveKernelAbsolutePython, resolveKernelCommandTemplate } from './kernel';
@@ -86,6 +88,18 @@ const plugin: JupyterFrontEndPlugin<void> = {
       });
     };
 
+    const getEffectiveServerRoot = (): string | null =>
+      runnerSettings.serverRootPath ?? (PageConfig.getOption('serverRoot') || null);
+
+    let lastActiveEditorId: string | null = null;
+    if (editorTracker) {
+      editorTracker.currentChanged.connect((_sender, widget) => {
+        if (widget) {
+          lastActiveEditorId = widget.id;
+        }
+      });
+    }
+
     let latestRunCommand: string | null = null;
     let latestRunTerminalId: string | null = null;
     let preferredReusableTerminalId: string | null = null;
@@ -110,7 +124,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
       return terminalTracker.find(widget => widget.id === preferredReusableTerminalId) ?? null;
     };
 
-    const runInTerminal = async (command: string): Promise<boolean> => {
+    const runInTerminal = async (command: string, splitBelow = false): Promise<boolean> => {
       if (!terminalTracker || !app.serviceManager.terminals.isAvailable()) {
         await showDialog({
           title: 'Terminal unavailable',
@@ -125,8 +139,18 @@ const plugin: JupyterFrontEndPlugin<void> = {
         const shouldCreateNew =
           runnerSettings.openNewTerminalPerRun || (!reusableTerminal && !terminalTracker.currentWidget);
         if (shouldCreateNew) {
-          await app.commands.execute('terminal:create-new');
+          await app.commands.execute('terminal:create-new', {});
           preferredReusableTerminalId = terminalTracker.currentWidget?.id ?? null;
+          const newTerminal = terminalTracker.currentWidget;
+          if (splitBelow && newTerminal) {
+            const editorRef = editorTracker?.currentWidget?.id ?? lastActiveEditorId;
+            if (editorRef) {
+              app.shell.add(newTerminal, 'main', { mode: 'split-bottom', ref: editorRef, activate: true });
+              if (newTerminal.parent instanceof SplitPanel) {
+                newTerminal.parent.setRelativeSizes([0.7, 0.3]);
+              }
+            }
+          }
         }
 
         const terminalWidget = reusableTerminal ?? terminalTracker.currentWidget;
@@ -142,7 +166,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         await app.shell.activateById(terminalWidget.id);
         terminalWidget.content.session.send({
           type: 'stdin',
-          content: [buildTransparentExecutionCommand(command) + '\n']
+          content: [command + '\n']
         });
         latestRunCommand = command;
         latestRunTerminalId = terminalWidget.id;
@@ -186,6 +210,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
     app.commands.addCommand('python-runner:run', {
       label: 'Run Python File',
+      icon: runIcon,
       isVisible: () => resolveCurrentTarget().path !== null,
       execute: async () => {
         const target = resolveCurrentTarget();
@@ -201,7 +226,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         const kernelspecs = app.serviceManager.kernelspecs.specs?.kernelspecs ?? {};
         const template = resolveKernelCommandTemplate(kernelName, runnerSettings.kernelCommandMap);
         const kernelAbsolutePython = resolveKernelAbsolutePython(kernelName, kernelspecs);
-        const scriptPath = resolveAbsoluteScriptPath(runnerSettings.serverRootPath, target.path);
+        const scriptPath = resolveAbsoluteScriptPath(getEffectiveServerRoot(), target.path);
         const runCommand = buildRunCommandFromTemplate({
           template,
           defaultPythonCommand: kernelAbsolutePython ?? runnerSettings.defaultPythonCommand,
@@ -216,12 +241,13 @@ const plugin: JupyterFrontEndPlugin<void> = {
           return;
         }
         const cwd = resolveDefaultCwd(runnerSettings.defaultCwdMode, target.path);
-        await runInTerminal(wrapCommandWithCwd(runCommand, cwd));
+        await runInTerminal(wrapCommandWithCwd(runCommand, cwd), target.source === 'editor');
       }
     });
 
     app.commands.addCommand('python-runner:run-advanced', {
       label: 'Run Python File (Advanced)',
+      icon: fastForwardIcon,
       isVisible: () => resolveCurrentTarget().path !== null,
       execute: async () => {
         const target = resolveCurrentTarget();
@@ -288,7 +314,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         const mergedEnv = { ...defaultEnv, ...resolved.env };
         const templateFromKernel = resolveKernelCommandTemplate(resolved.kernelName, kernelCommandMap);
         const kernelAbsolutePython = resolveKernelAbsolutePython(resolved.kernelName, kernelspecs);
-        const scriptPath = resolveAbsoluteScriptPath(runnerSettings.serverRootPath, target.path);
+        const scriptPath = resolveAbsoluteScriptPath(getEffectiveServerRoot(), target.path);
         if (!resolved.commandOverride && resolved.kernelName && !isLikelyPythonKernel(resolved.kernelName)) {
           const proceed = await showDialog({
             title: 'Non-Python kernel selected',
@@ -317,7 +343,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         }
         const fallbackCwd = resolveDefaultCwd(runnerSettings.defaultCwdMode, target.path);
         const finalCommand = wrapCommandWithCwd(runCommand, resolved.cwd ?? fallbackCwd);
-        const didRun = await runInTerminal(finalCommand);
+        const didRun = await runInTerminal(finalCommand, target.source === 'editor');
         if (didRun && resolved.saveArgsPreset && result.value.argsText.trim().length > 0) {
           await updateRecentArgsPresets(target.path, result.value.argsText);
         }
@@ -337,7 +363,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
     });
 
     app.commands.addCommand('python-runner:stop-latest', {
-      label: 'Stop Last Python Run',
+      label: 'Stop Python Run',
+      icon: stopIcon,
       isEnabled: () => latestRunTerminalId !== null,
       execute: async () => {
         if (!terminalTracker || !latestRunTerminalId) {
@@ -387,6 +414,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
     if (fileBrowserFactory) {
       app.contextMenu.addItem({
+        type: 'separator',
+        selector: '.jp-DirListing-item[data-isdir="false"]',
+        rank: 4.9
+      });
+      app.contextMenu.addItem({
         command: 'python-runner:run',
         selector: '.jp-DirListing-item[data-isdir="false"]',
         rank: 5
@@ -394,7 +426,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
       app.contextMenu.addItem({
         command: 'python-runner:run-advanced',
         selector: '.jp-DirListing-item[data-isdir="false"]',
-        rank: 6
+        rank: 5.1
+      });
+      app.contextMenu.addItem({
+        type: 'separator',
+        selector: '.jp-DirListing-item[data-isdir="false"]',
+        rank: 5.2
       });
     }
 
@@ -412,22 +449,27 @@ const plugin: JupyterFrontEndPlugin<void> = {
         widget.toolbar.insertItem(
           10,
           'python-runner-run',
-          new ToolbarButton({
-            label: 'Run',
-            onClick: () => {
-              void app.commands.execute('python-runner:run');
-            }
+          new CommandToolbarButton({
+            commands: app.commands,
+            id: 'python-runner:run'
           })
         );
 
         widget.toolbar.insertItem(
           11,
           'python-runner-run-advanced',
-          new ToolbarButton({
-            label: 'Run Advanced',
-            onClick: () => {
-              void app.commands.execute('python-runner:run-advanced');
-            }
+          new CommandToolbarButton({
+            commands: app.commands,
+            id: 'python-runner:run-advanced'
+          })
+        );
+
+        widget.toolbar.insertItem(
+          12,
+          'python-runner-stop',
+          new CommandToolbarButton({
+            commands: app.commands,
+            id: 'python-runner:stop-latest'
           })
         );
       });

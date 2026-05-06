@@ -1,177 +1,127 @@
 # jupyterlab-run-python
 
-`jupyterlab-run-python` is a JupyterLab 4 extension that adds one-click Python script execution from the file editor and file browser.
+A JupyterLab 4 extension for running `.py` files directly from the editor toolbar or file browser, with execution in a JupyterLab terminal.
 
-It is designed for users who edit `.py` files in JupyterLab and want fast execution in a terminal without manually copying commands.
+## Features
 
-## What this extension does
-
-- Adds `Run` and `Run Advanced` actions for Python files.
-- Supports command resolution from active kernel context or default settings.
-- Executes scripts in JupyterLab terminals with a transparent command preview.
-- Adds quick actions to re-run or stop the most recent run.
-- Supports per-file recent argument presets in `Run Advanced`.
+- **Run** and **Run Advanced** actions for `.py` files
+- Toolbar buttons in the file editor for open scripts
+- Context menu items in the file browser
+- Kernel-aware command resolution with configurable fallbacks
+- **Run Advanced** dialog: kernel selector, command override, arguments, environment variables, working directory, and per-file argument presets
+- Terminal split: when running a script open in the editor, the terminal opens as a split panel below the editor
+- Re-run and stop actions for the most recent execution
+- Reactive settings — changes apply to the next run without a restart
 
 ## Compatibility
 
-- Python: `>=3.11,<4.0`
-- JupyterLab: `>=4.0,<5.0`
-- Node.js (build/dev): `>=20`
+| | Version |
+|---|---|
+| JupyterLab | `>=4.0, <5` |
+| Python | `>=3.11` |
+| Node.js (build only) | `>=20` |
 
-## How it works
-
-### Run
-
-`Run` resolves the target `.py` file from the current editor or file browser selection, builds the execution command, and sends it to a JupyterLab terminal.
-
-Command source order:
-
-1. Active kernel name mapped through `kernelCommandMap`.
-2. Active kernel kernelspec absolute interpreter (`argv[0]`) when available.
-3. Fallback `defaultPythonCommand`.
-
-Script path behavior:
-
-- If `serverRootPath` is set, script paths are resolved to absolute filesystem paths (`<serverRootPath>/<contents-path>`).
-- This is the recommended mode for JupyterHub to avoid cwd/path mismatch issues.
-
-### Run Advanced
-
-`Run Advanced` opens a dialog where you can set:
-
-- Kernel profile
-- Command override (for example `python3`, `uv run python`, `poetry run python`)
-- Script arguments
-- Environment variables (`KEY=value`, one per line)
-- Working directory
-- Save args as recent preset for that file
-
-### Terminal behavior
-
-- Shows the full command first for transparency.
-- Supports either:
-  - new terminal per run (`openNewTerminalPerRun=true`), or
-  - reuse terminal mode (`openNewTerminalPerRun=false`).
-- Includes:
-  - `python-runner:rerun-latest`
-  - `python-runner:stop-latest`
-
-## Install (recommended)
-
-Use `pip`/`conda` style installation for JupyterLab 4 prebuilt extensions.
+## Installation
 
 ```bash
 pip install jupyterlab-run-python
 ```
 
-For local source validation:
-
-```bash
-pip install .
-```
-
-Then verify:
+Verify the extension loaded:
 
 ```bash
 jupyter labextension list
 ```
 
-You should see `jupyterlab-run-python` enabled.
+## Usage
 
-## Local JS build (contributors)
+### Run
 
-From this repository root:
+Click the **Run** button in the editor toolbar (when a `.py` file is open), or right-click a `.py` file in the file browser and choose **Run Python File**.
 
-```bash
-npm ci
-npm run build
-```
+Command resolution order:
 
-## Install for JupyterHub validation
+1. Active kernel name → `kernelCommandMap` setting
+2. Active kernel's absolute interpreter path from kernelspecs
+3. `defaultPythonCommand` setting (default: `python3`)
 
-Install the Python package into the same environment used by your single-user Jupyter server.
+### Run Advanced
 
-### Option A: admin-managed environment (recommended)
+Opens a dialog before execution where you can configure:
 
-Run in the JupyterHub single-user image/env during build or provisioning:
+- **Kernel** — selects the Python interpreter profile
+- **Command override** — e.g. `uv run python`, `poetry run python`
+- **Arguments** — appended to the script path
+- **Environment variables** — `KEY=value`, one per line, merged with `defaultEnv`
+- **Working directory** — overrides `defaultCwdMode`
+- **Save as preset** — saves args for that file (up to 5 per file, accessible next time)
 
-```bash
-pip install /path/to/jupyter-run-python
-```
+### Terminal behavior
 
-### Option B: user-level validation (if terminal access is allowed)
+- Running from the **editor** opens a split terminal below the editor at a 70/30 ratio
+- Running from the **file browser** opens the terminal as a new tab
+- `openNewTerminalPerRun=false` reuses the same terminal across runs
 
-In a JupyterHub terminal:
+### Re-run / Stop
 
-```bash
-git clone <repo-url> ~/jupyter-run-python
-cd ~/jupyter-run-python
-npm ci
-npm run build
-pip install .
-```
-
-If your JupyterHub deployment has readonly system paths, use the environment or image build path instead of per-user install.
-
-Recommended JupyterHub setting for reliable path execution:
-
-- Set `serverRootPath` to the single-user server filesystem root that matches Jupyter contents paths (for example `/home/jovyan`).
-
-## JupyterHub notebook validation test
-
-Use this to confirm end-to-end behavior after install.
-
-1. In JupyterLab, create `validation_script.py` with:
-
-```python
-import os
-print("validation ok")
-print("cwd:", os.getcwd())
-```
-
-2. Open `validation_script.py` in the file editor.
-3. Click `Run` in the editor toolbar.
-4. Confirm a terminal opens and prints:
-   - the command preview
-   - `validation ok`
-5. Run command palette action `Re-run Last Python Command` and confirm it executes again.
-6. Run command palette action `Stop Last Python Run` while a longer script is running and confirm interruption.
-7. Open `Run Advanced`, add args like `--demo value`, check save preset, run, then reopen advanced dialog and confirm the preset appears.
-
-## Commands
-
-- `python-runner:run`
-- `python-runner:run-advanced`
-- `python-runner:rerun-latest`
-- `python-runner:stop-latest`
-- `python-runner:about`
+- **Re-run Last Python Command** (`python-runner:rerun-latest`) — available in the command palette
+- **Stop Python Run** (`python-runner:stop-latest`) — sends Ctrl+C to the active terminal; also shown as a toolbar button
 
 ## Settings
 
-Defined in `schema/plugin.json`:
+Open **Settings → Advanced Settings Editor → Python Runner** to configure:
 
-- `defaultPythonCommand`
-- `kernelCommandMap`
-- `openNewTerminalPerRun`
-- `defaultEnv`
-- `defaultCwdMode`
-- `showRunButtonInEditor`
-- `recentArgsPresets`
-- `serverRootPath`
+| Setting | Default | Description |
+|---|---|---|
+| `defaultPythonCommand` | `python3` | Fallback interpreter when no kernel mapping exists |
+| `kernelCommandMap` | `{}` | Map kernel name → command template (`{python}`, `{script}`, `{args}`) |
+| `openNewTerminalPerRun` | `false` | Open a fresh terminal for every run |
+| `defaultEnv` | `{}` | Environment variables applied to every run |
+| `defaultCwdMode` | `script_dir` | Working directory: `script_dir`, `workspace_root`, or `server_root` |
+| `showRunButtonInEditor` | `true` | Show Run/Stop buttons in the editor toolbar |
+| `serverRootPath` | `""` | Absolute server filesystem root (recommended for JupyterHub) |
+| `recentArgsPresets` | `{}` | Persisted per-file argument history (managed automatically) |
 
-## Developer checks
+### JupyterHub
+
+Set `serverRootPath` to the single-user server filesystem root (e.g. `/home/jovyan`) so that Jupyter contents paths are resolved to correct absolute filesystem paths.
+
+## Commands
+
+| Command ID | Description |
+|---|---|
+| `python-runner:run` | Run the current `.py` file |
+| `python-runner:run-advanced` | Run with advanced options dialog |
+| `python-runner:rerun-latest` | Re-run the last command |
+| `python-runner:stop-latest` | Stop the running script (Ctrl+C) |
+
+All commands are accessible from the command palette under the **Python Runner** category.
+
+## Development
 
 ```bash
-npm run lint
-npm run typecheck
+# Install dependencies
+npm ci
+
+# Build TypeScript
 npm run build
+
+# Type check
+npm run typecheck
+
+# Lint
+npm run lint
+
+# Run tests
 npm test
+
+# Build the JupyterLab prebuilt extension bundle
+npm run build:labextension
+
+# Install into active JupyterLab environment
+pip install .
 ```
-
-## Status
-
-Phased implementation status is tracked in `BUILD_CHECKLIST.md`.
 
 ## License
 
-BSD-3-Clause.
+MIT

@@ -30,7 +30,7 @@
     "build": "tsc -p tsconfig.json",
     "build:labextension": "jupyter labextension build .",
     "clean": "rm -rf lib tsconfig.tsbuildinfo",
-    "lint": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src tests vitest.config.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json --noEmit",
@@ -40,17 +40,23 @@
   "dependencies": {
     "@jupyterlab/application": "^4.2.0",
     "@jupyterlab/apputils": "^4.3.0",
+    "@jupyterlab/coreutils": "^6.5.0",
     "@jupyterlab/filebrowser": "^4.3.0",
     "@jupyterlab/fileeditor": "^4.3.0",
-    "@jupyterlab/settingregistry": "^4.3.0",
     "@jupyterlab/services": "^7.3.0",
+    "@jupyterlab/settingregistry": "^4.3.0",
     "@jupyterlab/terminal": "^4.3.0",
+    "@jupyterlab/ui-components": "^4.5.0",
     "@lumino/widgets": "^2.7.1"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@jupyterlab/builder": "^4.2.0",
-    "typescript": "^5.8.3",
-    "vitest": "^2.1.8"
+    "eslint": "^10.3.0",
+    "jsdom": "^29.1.1",
+    "typescript": "^6.0.0",
+    "typescript-eslint": "^8.59.2",
+    "vitest": "^4.0.0"
   },
   "sideEffects": [
     "style/*.css"
