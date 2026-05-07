@@ -57,7 +57,7 @@ export const buildTransparentExecutionCommand = (runCommand: string): string => 
 };
 
 export const wrapCommandWithCwd = (command: string, cwd: string | null): string => {
-  if (!cwd || cwd.trim().length === 0) {
+  if (!cwd || cwd.trim().length === 0 || !cwd.trim().startsWith('/')) {
     return command;
   }
 

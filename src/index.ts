@@ -240,7 +240,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
           });
           return;
         }
-        const cwd = resolveDefaultCwd(runnerSettings.defaultCwdMode, target.path);
+        const cwd = resolveDefaultCwd(runnerSettings.defaultCwdMode, scriptPath);
         await runInTerminal(wrapCommandWithCwd(runCommand, cwd), target.source === 'editor');
       }
     });
@@ -341,7 +341,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
           });
           return;
         }
-        const fallbackCwd = resolveDefaultCwd(runnerSettings.defaultCwdMode, target.path);
+        const fallbackCwd = resolveDefaultCwd(runnerSettings.defaultCwdMode, scriptPath);
         const finalCommand = wrapCommandWithCwd(runCommand, resolved.cwd ?? fallbackCwd);
         const didRun = await runInTerminal(finalCommand, target.source === 'editor');
         if (didRun && resolved.saveArgsPreset && result.value.argsText.trim().length > 0) {
