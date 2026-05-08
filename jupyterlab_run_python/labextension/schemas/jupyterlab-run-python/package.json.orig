@@ -8,11 +8,11 @@
     "jupyterlab-extension",
     "python"
   ],
-  "license": "BSD-3-Clause",
+  "license": "MIT",
   "author": "bmharris",
   "repository": {
     "type": "git",
-    "url": "bmharris@n150:/git/jupyter-run-python"
+    "url": "https://github.com/bmharris626/jupyter-run-python"
   },
   "files": [
     "lib/**/*",
