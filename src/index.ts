@@ -124,7 +124,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
       return terminalTracker.find(widget => widget.id === preferredReusableTerminalId) ?? null;
     };
 
-    const runInTerminal = async (command: string, splitBelow = false): Promise<boolean> => {
+    const runInTerminal = async (command: string, splitBelow = false, cwd: string | null = null): Promise<boolean> => {
       if (!terminalTracker || !app.serviceManager.terminals.isAvailable()) {
         await showDialog({
           title: 'Terminal unavailable',
@@ -139,7 +139,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
         const shouldCreateNew =
           runnerSettings.openNewTerminalPerRun || (!reusableTerminal && !terminalTracker.currentWidget);
         if (shouldCreateNew) {
-          await app.commands.execute('terminal:create-new', {});
+          const termArgs: Record<string, string> = {};
+          if (cwd) {
+            termArgs.cwd = cwd;
+          }
+          await app.commands.execute('terminal:create-new', termArgs);
           preferredReusableTerminalId = terminalTracker.currentWidget?.id ?? null;
           const newTerminal = terminalTracker.currentWidget;
           if (splitBelow && newTerminal) {
@@ -241,7 +245,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
           return;
         }
         const cwd = resolveDefaultCwd(runnerSettings.defaultCwdMode, scriptPath);
-        await runInTerminal(wrapCommandWithCwd(runCommand, cwd), target.source === 'editor');
+        await runInTerminal(wrapCommandWithCwd(runCommand, cwd), target.source === 'editor', cwd);
       }
     });
 
@@ -342,8 +346,9 @@ const plugin: JupyterFrontEndPlugin<void> = {
           return;
         }
         const fallbackCwd = resolveDefaultCwd(runnerSettings.defaultCwdMode, scriptPath);
-        const finalCommand = wrapCommandWithCwd(runCommand, resolved.cwd ?? fallbackCwd);
-        const didRun = await runInTerminal(finalCommand, target.source === 'editor');
+        const effectiveCwd = resolved.cwd ?? fallbackCwd;
+        const finalCommand = wrapCommandWithCwd(runCommand, effectiveCwd);
+        const didRun = await runInTerminal(finalCommand, target.source === 'editor', effectiveCwd);
         if (didRun && resolved.saveArgsPreset && result.value.argsText.trim().length > 0) {
           await updateRecentArgsPresets(target.path, result.value.argsText);
         }
