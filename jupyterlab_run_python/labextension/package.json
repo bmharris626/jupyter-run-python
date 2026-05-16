@@ -26,7 +26,7 @@
     "outputDir": "jupyterlab_run_python/labextension",
     "schemaDir": "schema",
     "_build": {
-      "load": "static/remoteEntry.fe7e8a437a10c1dda3bb.js",
+      "load": "static/remoteEntry.4a42eba22db1bfa4b235.js",
       "extension": "./extension"
     }
   },
