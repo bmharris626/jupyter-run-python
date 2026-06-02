@@ -1,27 +1,24 @@
 # jupyterlab-run-python
 
+[![PyPI](https://img.shields.io/pypi/v/jupyterlab-run-python.svg)](https://pypi.org/project/jupyterlab-run-python/)
+[![CI](https://github.com/bmharris626/jupyter-run-python/actions/workflows/ci.yml/badge.svg)](https://github.com/bmharris626/jupyter-run-python/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 A JupyterLab 4 extension for running `.py` files directly from the editor toolbar or file browser, with execution in a JupyterLab terminal.
 
-## Features
+## Description
 
-- **Run** and **Run Advanced** actions for `.py` files
-- Toolbar buttons in the file editor for open scripts
-- Context menu items in the file browser
-- Kernel-aware command resolution with configurable fallbacks
-- **Run Advanced** dialog: kernel selector, command override, arguments, environment variables, working directory, and per-file argument presets
-- Terminal split: when running a script open in the editor, the terminal opens as a split panel below the editor
-- Re-run and stop actions for the most recent execution
-- Reactive settings — changes apply to the next run without a restart
+Launch Python scripts from within JupyterLab using the **Run** and **Run Advanced** actions. The extension resolves the appropriate Python interpreter from the active kernel, supports command overrides and argument presets, and manages terminal lifecycle including split-panel mode and re-run/stop capabilities.
 
-## Compatibility
+## Quick Start
 
-| | Version |
-|---|---|
-| JupyterLab | `>=4.0, <5` |
-| Python | `>=3.11` |
-| Node.js (build only) | `>=20` |
+```bash
+pip install jupyterlab-run-python
+```
 
-## Installation
+Open JupyterLab, open a `.py` file, and click the **Run** button in the editor toolbar.
+
+## Installation & Setup
 
 ```bash
 pip install jupyterlab-run-python
@@ -54,39 +51,75 @@ Opens a dialog before execution where you can configure:
 - **Arguments** — appended to the script path
 - **Environment variables** — `KEY=value`, one per line, merged with `defaultEnv`
 - **Working directory** — overrides `defaultCwdMode`
-- **Save as preset** — saves args for that file (up to 5 per file, accessible next time)
+- **Save as preset** — saves args for that file (up to 5 per file)
 
 ### Terminal behavior
 
-- Running from the **editor** opens a split terminal below the editor at a 70/30 ratio
-- Running from the **file browser** opens the terminal as a new tab
-- `openNewTerminalPerRun=false` reuses the same terminal across runs
+- Running from the **editor** opens a split terminal below the editor at a 70/30 ratio.
+- Running from the **file browser** opens the terminal as a new tab.
+- `openNewTerminalPerRun=false` reuses the same terminal across runs.
 
 ### Re-run / Stop
 
-- **Re-run Last Python Command** (`python-runner:rerun-latest`) — available in the command palette
-- **Stop Python Run** (`python-runner:stop-latest`) — sends Ctrl+C to the active terminal; also shown as a toolbar button
+- **Re-run Last Python Command** (`python-runner:rerun-latest`) — available in the command palette.
+- **Stop Python Run** (`python-runner:stop-latest`) — sends Ctrl+C to the active terminal.
 
-## Settings
+## Configuration Reference
 
 Open **Settings → Advanced Settings Editor → Python Runner** to configure:
 
-| Setting | Default | Description |
-|---|---|---|
-| `defaultPythonCommand` | `python3` | Fallback interpreter when no kernel mapping exists |
-| `kernelCommandMap` | `{}` | Map kernel name → command template (`{python}`, `{script}`, `{args}`) |
-| `openNewTerminalPerRun` | `false` | Open a fresh terminal for every run |
-| `defaultEnv` | `{}` | Environment variables applied to every run |
-| `defaultCwdMode` | `script_dir` | Working directory: `script_dir`, `workspace_root`, or `server_root` |
-| `showRunButtonInEditor` | `true` | Show Run/Stop buttons in the editor toolbar |
-| `serverRootPath` | `""` | Absolute server filesystem root (recommended for JupyterHub) |
-| `recentArgsPresets` | `{}` | Persisted per-file argument history (managed automatically) |
+| Setting | Type | Default | Description |
+|---|---|---|---|
+| `defaultPythonCommand` | str | `python3` | Fallback interpreter when no kernel mapping exists |
+| `kernelCommandMap` | object | `{}` | Map kernel name → command template (`{python}`, `{script}`, `{args}`) |
+| `openNewTerminalPerRun` | bool | `false` | Open a fresh terminal for every run |
+| `defaultEnv` | object | `{}` | Environment variables applied to every run |
+| `defaultCwdMode` | str | `script_dir` | Working directory: `script_dir`, `workspace_root`, or `server_root` |
+| `showRunButtonInEditor` | bool | `true` | Show Run/Stop buttons in the editor toolbar |
+| `serverRootPath` | str | `""` | Absolute server filesystem root (recommended for JupyterHub) |
+| `recentArgsPresets` | object | `{}` | Persisted per-file argument history (managed automatically) |
 
 ### JupyterHub
 
 Set `serverRootPath` to the single-user server filesystem root (e.g. `/home/jovyan`) so that Jupyter contents paths are resolved to correct absolute filesystem paths.
 
-## Commands
+## Project Structure
+
+```
+jupyterlab_run_python/              # Python package
+├── __init__.py                     # Extension registration (no server component)
+├── _version.py                     # Auto-generated from package.json
+└── labextension/                   # webpack bundle
+src/                                # TypeScript sources
+├── index.ts                        # JupyterFrontEndPlugin entry
+├── context.ts                      # .py file target resolution
+├── kernel.ts                       # Kernel name → command resolution
+├── settings.ts                     # ISettingRegistry parsing
+├── execution.ts                    # Shell command building
+├── advanced.ts                     # Run Advanced dialog widget
+├── advanced-utils.ts               # Form value parsing/validation
+├── edge.ts                         # Guard functions
+└── env.ts                          # Environment handling
+tests/                              # Vitest tests (Node env)
+├── advanced-form.test.ts
+├── advanced.test.ts
+├── context.test.ts
+├── edge.test.ts
+├── execution.test.ts
+├── kernel.test.ts
+└── settings.test.ts
+style/                              # CSS
+└── index.css
+schema/                             # Settings schema
+└── plugin.json
+.github/workflows/                  # CI (Python 3.11/3.12/3.13)
+package.json
+pyproject.toml
+tsconfig.json
+vitest.config.ts
+LICENSE
+CHANGELOG.md
+```
 
 | Command ID | Description |
 |---|---|
@@ -97,31 +130,21 @@ Set `serverRootPath` to the single-user server filesystem root (e.g. `/home/jovy
 
 All commands are accessible from the command palette under the **Python Runner** category.
 
-## Development
+## Contributing
 
-```bash
-# Install dependencies
-npm ci
+- Run tests: `npm test` or `jlpm test`
+- Single test file: `npx vitest run tests/execution.test.ts`
+- Watch mode: `npm run test:watch`
+- Build TypeScript: `npm run build`
+- Type check: `npm run typecheck`
+- Lint: `npm run lint`
+- Build labextension: `npm run build:labextension`
+- Install into active JupyterLab: `pip install .`
 
-# Build TypeScript
-npm run build
+## Changelog
 
-# Type check
-npm run typecheck
-
-# Lint
-npm run lint
-
-# Run tests
-npm test
-
-# Build the JupyterLab prebuilt extension bundle
-npm run build:labextension
-
-# Install into active JupyterLab environment
-pip install .
-```
+See [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
-MIT
+MIT. See [LICENSE](LICENSE).
