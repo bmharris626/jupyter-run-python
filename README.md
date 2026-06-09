@@ -20,11 +20,23 @@ Open JupyterLab, open a `.py` file, and click the **Run** button in the editor t
 
 ## Installation & Setup
 
+### From PyPI
+
 ```bash
 pip install jupyterlab-run-python
 ```
 
-Verify the extension loaded:
+### From pre-built wheel
+
+Download the pre-built wheel from the [latest release](https://github.com/bmharris626/jupyter-run-python/releases) and install:
+
+```bash
+pip install jupyterlab_run_python-0.1.0-py3-none-any.whl
+```
+
+The wheel is self-contained and includes the frontend bundle — no build tools required.
+
+### Verify installation
 
 ```bash
 jupyter labextension list
