@@ -28,7 +28,7 @@ pip install jupyterlab-run-python
 
 ### From pre-built wheel
 
-Download the pre-built wheel from the [latest release](https://github.com/bmharris626/jupyter-run-python/releases) and install:
+Download the wheel from `dist/jupyterlab_run_python-0.1.0-py3-none-any.whl` in the repository and install:
 
 ```bash
 pip install jupyterlab_run_python-0.1.0-py3-none-any.whl
