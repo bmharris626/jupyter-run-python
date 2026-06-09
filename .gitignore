@@ -36,8 +36,6 @@ coverage/
 .eggs/
 pip-wheel-metadata/
 wheelhouse/
-*.whl
-*.tar.gz
 
 # Secrets / local config
 .env
