@@ -15,7 +15,7 @@ export interface RunnerSettings {
 
 const DEFAULT_SETTINGS: RunnerSettings = {
   defaultPythonCommand: 'python3',
-  kernelCommandMap: { python3: 'python3', python: 'python' },
+  kernelCommandMap: {},
   openNewTerminalPerRun: true,
   defaultEnv: {},
   defaultCwdMode: 'script_dir',

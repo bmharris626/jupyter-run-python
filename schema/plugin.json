@@ -14,10 +14,7 @@
       "type": "object",
       "title": "Kernel command map",
       "description": "Map from kernel name to shell command template.",
-      "default": {
-        "python3": "python3",
-        "python": "python"
-      }
+      "default": {}
     },
     "openNewTerminalPerRun": {
       "type": "boolean",
